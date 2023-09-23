@@ -11,8 +11,9 @@ void help() {
 int main(int argc, char *argv[]) {
 
 #ifdef PLAYGROUND
-    char input[200]; // at most 200 bytes
-    scanf_s("%s", &input);
+    //char input[200]; // at most 200 bytes
+    //scanf_s("%s", &input);
+    char input[] = "x: integer;\n\n\nx := 34.5;\n\nx := 5;\n\noutput << x + 3;\n\n";
 
     int index = 0;
     struct Token token;
