@@ -1,13 +1,23 @@
 #pragma once
 
 enum TokenType {
-    // Single Character Token
-    TOKEN_LPAREN, TOKEN_RPAREN, TOKEN_COLON, TOKEN_SEMI_COLON,
-    TOKEN_ADD, TOKEN_SUBTRACT,
-
-    // Multi Character Token
-    TOKEN_DOUBLE_LT, TOKEN_ASSIGN,
-    TOKEN_GT, TOKEN_LT, TOKEN_EQ,
+    // Allowed Special Tokens
+    TOKEN_LPAREN,
+    TOKEN_RPAREN,
+    TOKEN_COLON,
+    TOKEN_SEMI_COLON,
+    
+    // Operators
+    TOKEN_DOUBLE_LT,
+    TOKEN_ASSIGN,
+    TOKEN_GT,
+    TOKEN_LT,
+    TOKEN_EQ,
+    TOKEN_GTE,
+    TOKEN_LTE,
+    TOKEN_NE,
+    TOKEN_ADD,
+    TOKEN_SUBTRACT,
 
     // Identifier
     TOKEN_RESERVED,
