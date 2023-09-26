@@ -18,4 +18,4 @@ enum State {
 
 bool is_reserved(char* identifier, int lexeme_len);
 bool match_next_or(const char* chars_to_match, char curr_ch, bool is_null_check);
-struct Token getNextToken(char *input, int *index);
+Token getNextToken(char *input, int *index);

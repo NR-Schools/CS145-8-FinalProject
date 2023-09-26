@@ -23,7 +23,7 @@ enum TokenType {
     TOKEN_END
 };
 
-struct Token {
+typedef struct {
     enum TokenType type;
     char lexeme[50];
-};
+} Token;

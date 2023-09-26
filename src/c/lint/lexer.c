@@ -38,9 +38,9 @@ bool is_reserved(char *identifier, int lexeme_len)
     return false;
 }
 
-struct Token getNextToken(char *input, int *index)
+Token getNextToken(char *input, int *index)
 {
-    struct Token token;
+    Token token;
     enum State current_state = STATE_START;
     int lexeme_ind = 0;
 
@@ -54,6 +54,12 @@ struct Token getNextToken(char *input, int *index)
     while (current_state != STATE_FINISH)
     {
         char curr_char = input[*index];
+
+        // Skip all spaces
+        while(curr_char == ' ' || curr_char == '\n') {
+            (*index)++;
+            curr_char = input[*index];
+        }
         
         // Check if End of Token
         if (curr_char == '\0')
@@ -164,6 +170,7 @@ struct Token getNextToken(char *input, int *index)
                     token.type = TOKEN_INVALID;
                     token.lexeme[lexeme_ind++] = curr_char;
                     current_state = STATE_FINISH;
+                    break;
                 }
             }
             break;
@@ -188,6 +195,7 @@ struct Token getNextToken(char *input, int *index)
                     token.type = TOKEN_INVALID;
                     token.lexeme[lexeme_ind++] = curr_char;
                     current_state = STATE_FINISH;
+                    break;
                 }
 
                 // Do via Lookahead
@@ -213,6 +221,7 @@ struct Token getNextToken(char *input, int *index)
                     token.type = TOKEN_INVALID;
                     token.lexeme[lexeme_ind++] = curr_char;
                     current_state = STATE_FINISH;
+                    break;
                 }
 
                 // Do via Lookahead
@@ -233,13 +242,6 @@ struct Token getNextToken(char *input, int *index)
             break;
             case STATE_FINISH:
                 break;
-        }
-
-        // Skip all spaces and new lines
-        char next_char = input[*index + 1];
-        while(next_char == ' ' || next_char == '\n') {
-            (*index)++;
-            next_char = input[*index + 1];
         }
 
         // Go to next character
