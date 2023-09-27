@@ -1,6 +1,6 @@
 #include "lexer.h"
 
-bool match_next_or(const char *chars_to_match, char curr_ch, bool is_null_check)
+bool __match_next_or(const char *chars_to_match, char curr_ch, bool is_null_check)
 {
     if (is_null_check && curr_ch == '\0')
         return true;
@@ -12,7 +12,7 @@ bool match_next_or(const char *chars_to_match, char curr_ch, bool is_null_check)
     return false;
 }
 
-bool is_reserved(char *identifier, int lexeme_len)
+bool __is_reserved(char *identifier, int lexeme_len)
 {
     char *reserved[4] = {"integer", "double", "if", "output"};
     bool _flag = false;
@@ -42,7 +42,7 @@ bool is_reserved(char *identifier, int lexeme_len)
     return false;
 }
 
-Token getNextToken(char *input, int *index)
+Token getNextToken(char *input, int *index, int *src_line)
 {
     Token token;
     enum State current_state = STATE_START;
@@ -62,6 +62,9 @@ Token getNextToken(char *input, int *index)
         // Skip all spaces
         while (curr_char == ' ' || curr_char == '\n')
         {
+            if (curr_char == '\n')
+                (*src_line)++;
+
             (*index)++;
             curr_char = input[*index];
         }
@@ -95,7 +98,7 @@ Token getNextToken(char *input, int *index)
                     token.type = TOKEN_SUBTRACT;
                 else if (curr_char == '!' && next_char == '=')
                     token.type = TOKEN_NE;
-                
+
                 else if (curr_char == '=' && next_char == '=')
                     token.type = TOKEN_EQ;
 
@@ -166,7 +169,7 @@ Token getNextToken(char *input, int *index)
 
                 // Do via Lookahead
                 // Check for symbols that can cut off numbers
-                if (match_next_or(NUMBER_ENDS, next_char, true))
+                if (__match_next_or(NUMBER_ENDS, next_char, true))
                 {
                     current_state = STATE_FINISH;
                 }
@@ -181,7 +184,7 @@ Token getNextToken(char *input, int *index)
 
                 // Do via Lookahead
                 // Check for symbols that can cut off identifier
-                if (match_next_or(IDENT_ENDS, next_char, true))
+                if (__match_next_or(IDENT_ENDS, next_char, true))
                 {
                     current_state = STATE_FINISH;
                 }
@@ -225,7 +228,7 @@ Token getNextToken(char *input, int *index)
             // Do via Lookahead
             // Check for symbols that can cut off numbers
             char next_char = input[*index + 1];
-            if (match_next_or(NUMBER_ENDS, next_char, true))
+            if (__match_next_or(NUMBER_ENDS, next_char, true))
             {
                 current_state = STATE_FINISH;
             }
@@ -251,9 +254,9 @@ Token getNextToken(char *input, int *index)
             // Do via Lookahead
             // Check for symbols that can cut off identifier
             char next_char = input[*index + 1];
-            if (match_next_or(IDENT_ENDS, next_char, true))
+            if (__match_next_or(IDENT_ENDS, next_char, true))
             {
-                if (is_reserved(token.lexeme, lexeme_ind))
+                if (__is_reserved(token.lexeme, lexeme_ind))
                     token.type = TOKEN_RESERVED;
                 else
                     token.type = TOKEN_IDENTIFIER;

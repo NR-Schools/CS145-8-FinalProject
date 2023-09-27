@@ -1,5 +1,5 @@
 x: integer;
 y: double;
-x1 := 3a;
+x := 3;
 if(x<5)
   output<<x;

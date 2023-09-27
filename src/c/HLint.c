@@ -32,12 +32,15 @@ void lexer(char *content, TokenArray *tok_arr, bool *err_flag)
     Token token;
     int index = 0;
 
-    while ((token = getNextToken(content, &index)).type != TOKEN_END)
+    // Used for detailed response
+    int src_line = 1;
+
+    while ((token = getNextToken(content, &index, &src_line)).type != TOKEN_END)
     {
         //printf("Token: %s, Type: %d\n", token.lexeme, token.type);
         if (token.type == TOKEN_INVALID)
         {
-            printf("Invalid token: %s at col %d \n", token.lexeme, index);
+            printf("Invalid token: %s at line %d \n", token.lexeme, src_line);
             *err_flag = true;
             break;
         }
@@ -86,6 +89,10 @@ int main(int argc, char *argv[])
         Token token = token_arr->tokens[i];
         printf("Token: %s, Type: %d\n", token.lexeme, token.type);
     }
+
+    // Free memories
+    dyn_str_free(dynamic_str);
+    token_free_arr(token_arr);
 
     return 0;
 }
