@@ -2,29 +2,18 @@
 
 enum TokenType {
     // Allowed Special Tokens
-    TOKEN_LPAREN,
-    TOKEN_RPAREN,
-    TOKEN_COLON,
-    TOKEN_SEMI_COLON,
+    TOKEN_SEPARATOR,
     
     // Operators
-    TOKEN_DOUBLE_LT,
-    TOKEN_ASSIGN,
-    TOKEN_GT,
-    TOKEN_LT,
-    TOKEN_EQ,
-    TOKEN_GTE,
-    TOKEN_LTE,
-    TOKEN_NE,
-    TOKEN_ADD,
-    TOKEN_SUBTRACT,
+    TOKEN_BINARY_OPERATOR,
 
     // Identifier
     TOKEN_RESERVED,
     TOKEN_IDENTIFIER,
 
     // Literals
-    TOKEN_NUMBER,
+    TOKEN_INTEGER,
+    TOKEN_DECIMAL,
 
     // Invalid Token
     TOKEN_INVALID,

@@ -68,6 +68,7 @@ Token getNextToken(char *input, int *index, int *src_line)
             (*index)++;
             curr_char = input[*index];
         }
+        char next_char = input[*index + 1];
 
         // Check if End of Token
         if (curr_char == '\0')
@@ -80,27 +81,13 @@ Token getNextToken(char *input, int *index, int *src_line)
         {
         case STATE_START:
         {
-            char next_char = input[*index + 1];
-
             // Check all purely single character tokens only
-            if (curr_char == '(' || curr_char == ')' || curr_char == ';' || curr_char == '+' || curr_char == '-' ||
-                curr_char == '>' || curr_char == '=' || curr_char == '!')
+            if (curr_char == '(' || curr_char == ')' || curr_char == ';' || curr_char == '+' || curr_char == '-')
             {
-                if (curr_char == '(')
-                    token.type = TOKEN_LPAREN;
-                else if (curr_char == ')')
-                    token.type = TOKEN_RPAREN;
-                else if (curr_char == ';')
-                    token.type = TOKEN_SEMI_COLON;
-                else if (curr_char == '+')
-                    token.type = TOKEN_ADD;
-                else if (curr_char == '-')
-                    token.type = TOKEN_SUBTRACT;
-                else if (curr_char == '!' && next_char == '=')
-                    token.type = TOKEN_NE;
-
-                else if (curr_char == '=' && next_char == '=')
-                    token.type = TOKEN_EQ;
+                if (curr_char == '(' || curr_char == ')' || curr_char == ';')
+                    token.type = TOKEN_SEPARATOR;
+                else if (curr_char == '+' || curr_char == '-')
+                    token.type = TOKEN_BINARY_OPERATOR;
 
                 token.lexeme[lexeme_ind++] = curr_char;
                 current_state = STATE_FINISH;
@@ -109,13 +96,13 @@ Token getNextToken(char *input, int *index, int *src_line)
             // Symbols that can be one or more tokens
             else if (curr_char == ':')
             {
-                token.type = TOKEN_COLON;
+                token.type = TOKEN_SEPARATOR;
                 token.lexeme[lexeme_ind++] = curr_char;
 
                 if (next_char == '=')
                 {
                     token.lexeme[lexeme_ind++] = next_char;
-                    token.type = TOKEN_ASSIGN;
+                    token.type = TOKEN_BINARY_OPERATOR;
 
                     // Go to next character (due to lookahead)
                     (*index)++;
@@ -125,17 +112,12 @@ Token getNextToken(char *input, int *index, int *src_line)
             }
             else if (curr_char == '<')
             {
-                token.type = TOKEN_LT;
+                token.type = TOKEN_BINARY_OPERATOR;
                 token.lexeme[lexeme_ind++] = curr_char;
 
                 if (next_char == '<' || next_char == '=')
                 {
                     token.lexeme[lexeme_ind++] = next_char;
-
-                    if (next_char == '<')
-                        token.type = TOKEN_DOUBLE_LT;
-                    if (next_char == '=')
-                        token.type = TOKEN_LTE;
 
                     // Go to next character (due to lookahead)
                     (*index)++;
@@ -145,13 +127,12 @@ Token getNextToken(char *input, int *index, int *src_line)
             }
             else if (curr_char == '>')
             {
-                token.type = TOKEN_LT;
+                token.type = TOKEN_BINARY_OPERATOR;
                 token.lexeme[lexeme_ind++] = curr_char;
 
                 if (next_char == '=')
                 {
                     token.lexeme[lexeme_ind++] = next_char;
-                    token.type = TOKEN_GTE;
 
                     // Go to next character (due to lookahead)
                     (*index)++;
@@ -160,10 +141,23 @@ Token getNextToken(char *input, int *index, int *src_line)
                 current_state = STATE_FINISH;
             }
 
+            // Required two characters
+            else if ((curr_char == '!' || curr_char == '=') && next_char == '=')
+            {
+                token.type = TOKEN_BINARY_OPERATOR;
+                token.lexeme[lexeme_ind++] = curr_char;
+                token.lexeme[lexeme_ind++] = next_char;
+
+                // Go to next character (due to lookahead)
+                (*index)++;
+                
+                current_state = STATE_FINISH;
+            }
+
             // Check for numbers
             else if (isdigit(curr_char))
             {
-                token.type = TOKEN_NUMBER;
+                token.type = TOKEN_INTEGER;
                 token.lexeme[lexeme_ind++] = curr_char;
                 current_state = STATE_IN_NUMBER;
 
@@ -212,6 +206,7 @@ Token getNextToken(char *input, int *index, int *src_line)
             // Check for single-use dot
             else if (curr_char == '.' && !has_used_dot)
             {
+                token.type = TOKEN_DECIMAL;
                 token.lexeme[lexeme_ind++] = curr_char;
                 has_used_dot = true;
             }
@@ -227,7 +222,6 @@ Token getNextToken(char *input, int *index, int *src_line)
 
             // Do via Lookahead
             // Check for symbols that can cut off numbers
-            char next_char = input[*index + 1];
             if (__match_next_or(NUMBER_ENDS, next_char, true))
             {
                 current_state = STATE_FINISH;
@@ -236,8 +230,7 @@ Token getNextToken(char *input, int *index, int *src_line)
         break;
         case STATE_IN_IDENTIFIER:
         {
-            bool expr = ((curr_char >= 'A' && curr_char <= 'Z') || (curr_char >= 'a' && curr_char <= 'z'));
-            if (expr)
+            if ((curr_char >= 'A' && curr_char <= 'Z') || (curr_char >= 'a' && curr_char <= 'z'))
             {
                 token.lexeme[lexeme_ind++] = curr_char;
             }
@@ -253,7 +246,6 @@ Token getNextToken(char *input, int *index, int *src_line)
 
             // Do via Lookahead
             // Check for symbols that can cut off identifier
-            char next_char = input[*index + 1];
             if (__match_next_or(IDENT_ENDS, next_char, true))
             {
                 if (__is_reserved(token.lexeme, lexeme_ind))
