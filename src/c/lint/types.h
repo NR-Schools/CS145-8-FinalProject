@@ -5,7 +5,7 @@ enum TokenType {
     TOKEN_SEPARATOR,
     
     // Operators
-    TOKEN_BINARY_OPERATOR,
+    TOKEN_OPERATOR,
 
     // Identifier
     TOKEN_RESERVED,

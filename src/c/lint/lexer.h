@@ -17,6 +17,6 @@ enum State {
 };
 
 bool __is_reserved(char* identifier, int lexeme_len);
-bool __match_next_or(const char* chars_to_match, char curr_ch, bool is_null_check);
+bool __match_or(const char* chars_to_match, char curr_ch, bool is_null_check);
 
 Token getNextToken(char *input, int *index, int *src_line);

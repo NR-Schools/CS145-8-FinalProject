@@ -1,6 +1,6 @@
 #include "lexer.h"
 
-bool __match_next_or(const char *chars_to_match, char curr_ch, bool is_null_check)
+bool __match_or(const char *chars_to_match, char curr_ch, bool is_null_check)
 {
     if (is_null_check && curr_ch == '\0')
         return true;
@@ -87,7 +87,7 @@ Token getNextToken(char *input, int *index, int *src_line)
                 if (curr_char == '(' || curr_char == ')' || curr_char == ';')
                     token.type = TOKEN_SEPARATOR;
                 else if (curr_char == '+' || curr_char == '-')
-                    token.type = TOKEN_BINARY_OPERATOR;
+                    token.type = TOKEN_OPERATOR;
 
                 token.lexeme[lexeme_ind++] = curr_char;
                 current_state = STATE_FINISH;
@@ -102,7 +102,7 @@ Token getNextToken(char *input, int *index, int *src_line)
                 if (next_char == '=')
                 {
                     token.lexeme[lexeme_ind++] = next_char;
-                    token.type = TOKEN_BINARY_OPERATOR;
+                    token.type = TOKEN_OPERATOR;
 
                     // Go to next character (due to lookahead)
                     (*index)++;
@@ -112,7 +112,7 @@ Token getNextToken(char *input, int *index, int *src_line)
             }
             else if (curr_char == '<')
             {
-                token.type = TOKEN_BINARY_OPERATOR;
+                token.type = TOKEN_OPERATOR;
                 token.lexeme[lexeme_ind++] = curr_char;
 
                 if (next_char == '<' || next_char == '=')
@@ -127,7 +127,7 @@ Token getNextToken(char *input, int *index, int *src_line)
             }
             else if (curr_char == '>')
             {
-                token.type = TOKEN_BINARY_OPERATOR;
+                token.type = TOKEN_OPERATOR;
                 token.lexeme[lexeme_ind++] = curr_char;
 
                 if (next_char == '=')
@@ -144,7 +144,7 @@ Token getNextToken(char *input, int *index, int *src_line)
             // Required two characters
             else if ((curr_char == '!' || curr_char == '=') && next_char == '=')
             {
-                token.type = TOKEN_BINARY_OPERATOR;
+                token.type = TOKEN_OPERATOR;
                 token.lexeme[lexeme_ind++] = curr_char;
                 token.lexeme[lexeme_ind++] = next_char;
 
@@ -163,7 +163,7 @@ Token getNextToken(char *input, int *index, int *src_line)
 
                 // Do via Lookahead
                 // Check for symbols that can cut off numbers
-                if (__match_next_or(NUMBER_ENDS, next_char, true))
+                if (__match_or(NUMBER_ENDS, next_char, true))
                 {
                     current_state = STATE_FINISH;
                 }
@@ -178,7 +178,7 @@ Token getNextToken(char *input, int *index, int *src_line)
 
                 // Do via Lookahead
                 // Check for symbols that can cut off identifier
-                if (__match_next_or(IDENT_ENDS, next_char, true))
+                if (__match_or(IDENT_ENDS, next_char, true))
                 {
                     current_state = STATE_FINISH;
                 }
@@ -222,7 +222,7 @@ Token getNextToken(char *input, int *index, int *src_line)
 
             // Do via Lookahead
             // Check for symbols that can cut off numbers
-            if (__match_next_or(NUMBER_ENDS, next_char, true))
+            if (__match_or(NUMBER_ENDS, next_char, true))
             {
                 current_state = STATE_FINISH;
             }
@@ -246,7 +246,7 @@ Token getNextToken(char *input, int *index, int *src_line)
 
             // Do via Lookahead
             // Check for symbols that can cut off identifier
-            if (__match_next_or(IDENT_ENDS, next_char, true))
+            if (__match_or(IDENT_ENDS, next_char, true))
             {
                 if (__is_reserved(token.lexeme, lexeme_ind))
                     token.type = TOKEN_RESERVED;
