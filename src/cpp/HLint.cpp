@@ -55,11 +55,11 @@ std::vector<Token> lexer(std::string lines)
 int main(int argc, char *argv[])
 {
     // Show help if no arguments/too many args passed
-    //if (argc <= 1 || argc > 2)
-    //{
-    //    help();
-    //    return 0;
-    //}
+    if (argc <= 1 || argc > 2)
+    {
+        help();
+        return 0;
+    }
 
     std::string str_content = "x : integer; x := 2; output << x;";
 
