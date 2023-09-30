@@ -1,6 +1,12 @@
 # CS145-8-FinalProject
 
 ##### For C/C++ Implementation
+Navigate to directory: 
+```
+cd src/c
+cd src/cpp
+```
+
 ```
 In C:
 gcc HLint.c lint\\*.c lint\\helper_lib\\*.c -o HLint
