@@ -78,13 +78,12 @@ Token getNextToken(std::string input, int &index, int &src_line)
             // Symbols that can be one or more tokens
             else if (curr_char == ':')
             {
-                token.type = TOKEN_SEPARATOR;
+                token.type = TOKEN_OPERATOR;
                 token.lexeme += curr_char;
 
                 if (next_char == '=')
                 {
                     token.lexeme += next_char;
-                    token.type = TOKEN_OPERATOR;
 
                     // Go to next character (due to lookahead)
                     index++;

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -28,6 +29,13 @@ std::string read_file(const char *filename)
     return lines;
 }
 
+void write_file(const char *filename, std::string contents) {
+    std::ofstream out_file;
+    out_file.open(filename);
+    out_file << contents << '\n';
+    out_file.close();
+}
+
 std::vector<Token> lexer(std::string lines)
 {
     std::vector<Token> tokens;
@@ -51,7 +59,6 @@ std::vector<Token> lexer(std::string lines)
     return tokens;
 }
 
-
 int main(int argc, char *argv[])
 {
     // Show help if no arguments/too many args passed
@@ -61,18 +68,30 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    std::string str_content = "x : integer; x := 2; output << x;";
-
     // Start Reading File
-    //std::string rfile_content = read_file(argv[argc-1]);
+    std::string rfile_content = read_file(argv[argc-1]);
+
+    // Output to NOSPACES.TXT
+    rfile_content.erase(remove(rfile_content.begin(), rfile_content.end(), ' '), rfile_content.end());
+    write_file("NOSPACES.TXT", rfile_content);
 
     // Start Scanning (Lexer)
-    std::vector<Token> tokens = lexer(str_content);
-    
+    std::vector<Token> tokens = lexer(rfile_content);
+
+    // Output to RES_SYM.TXT
+    std::string res_symbols = "";
+    for(unsigned int i = 0; i < tokens.size(); i++) {
+        if (tokens[i].type != TokenType::TOKEN_IDENTIFIER) {
+            res_symbols += tokens[i].lexeme;
+
+            if (i+1 < tokens.size()) res_symbols += ", ";
+        }
+    }
+    write_file("RES_SYM.TXT", res_symbols);
+
     // Start Parsing (Parser)
     Parser parser(tokens);
     parser.parse();
-
 
     return 0;
 }

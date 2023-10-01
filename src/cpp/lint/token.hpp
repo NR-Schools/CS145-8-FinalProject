@@ -31,4 +31,11 @@ typedef struct token
     std::string lexeme = "";
 
     token() {}
+    token(TokenType type) {
+        this->type = type;
+    }
+    token(TokenType type, std::string lexeme) {
+        this->type = type;
+        this->lexeme = lexeme;
+    }
 } Token;

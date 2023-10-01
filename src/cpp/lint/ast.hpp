@@ -1,21 +1,35 @@
 #pragma once
 
 #include <iostream>
-#include <memory>
 #include <vector>
+#include <stdexcept>
+#include <unordered_map>
+#include <memory>
 
-class ASTNode;
+enum ASTNodeType {
+    PROGRAM,
 
-class DeclarationNode;
-class AssignmentNode;
+    DECLARATION,
+    ASSIGNMENT,
+    IF,
+    OUTPUT,
 
-class ConditionNode;
+    BINARY_OP,
+    UNARY_OP,
 
-class BinaryOpNode;
-class UnaryOpNode;
+    ATOM
+};
 
-class OutputNode;
-class IfNode;
+class ASTNode {
+public:
+    ASTNode();
+    ~ASTNode();
 
-class StatementNode;
-class ProgramNode;
+    void set_node_type(ASTNodeType _node_type);
+    void set_value(std::string _value);
+    void add_child_node(ASTNode *_child_node);
+private:
+    ASTNodeType node_type;
+    std::string value;
+    std::vector<ASTNode*> child_nodes;
+};
