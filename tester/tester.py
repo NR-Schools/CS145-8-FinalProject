@@ -37,7 +37,7 @@ if __name__ == "__main__":
                 if file_name.endswith(".HL"):
                     file_path = os.path.join(folder_root, file_name)
                     output = execute_file(f"{path_resolver(src_lang)} ../../{file_path} && cd.. && cd..")
-                    print(f"Test for {src_lang} [{test_no}/{len(files)}] --> {output}")
+                    print(f" Test for {src_lang} [{test_no}/{len(files)}] --> {output}")
                     test_no += 1
 
         print("-- END --")
