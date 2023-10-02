@@ -1,11 +1,8 @@
 {
     "reserved_words": [
-        "integer",
         "output"
     ],
     "symbols": [
-        ":",
-        ";",
         ":=",
         ";",
         "<<",
