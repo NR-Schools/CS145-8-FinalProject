@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -5,12 +6,13 @@
 
 #include "lint/lexer.hpp"
 #include "lint/parser.hpp"
+#include "interpreter/interpreter.hpp"
 
 
 void help()
 {
     printf("Please pass the source file path as the only argument\n");
-    printf("HLint (source file path)\n");
+    printf("HLint (source file path) [-r]\n");
 }
 
 std::string read_file(const char *filename)
@@ -26,6 +28,13 @@ std::string read_file(const char *filename)
     rfile.close();
 
     return lines;
+}
+
+void write_file(const char *filename, std::string contents) {
+    std::ofstream out_file;
+    out_file.open(filename);
+    out_file << contents << '\n';
+    out_file.close();
 }
 
 std::vector<Token> lexer(std::string lines)
@@ -55,24 +64,46 @@ std::vector<Token> lexer(std::string lines)
 int main(int argc, char *argv[])
 {
     // Show help if no arguments/too many args passed
-    if (argc <= 1 || argc > 2)
+    if (argc <= 1 || argc > 3)
     {
         help();
         return 0;
     }
 
-    std::string str_content = "x : integer; x := 2; output << x;";
-
     // Start Reading File
-    //std::string rfile_content = read_file(argv[argc-1]);
+    std::string rfile_content = read_file(argv[1]);
+
+    // Output to NOSPACES.TXT
+    rfile_content.erase(remove(rfile_content.begin(), rfile_content.end(), ' '), rfile_content.end());
+    write_file("NOSPACES.TXT", rfile_content);
 
     // Start Scanning (Lexer)
-    std::vector<Token> tokens = lexer(str_content);
-    
-    // Start Parsing (Parser)
-    Parser parser(tokens);
-    parser.parse();
+    std::cout << "Scanning..." << std::endl;
+    std::vector<Token> tokens = lexer(rfile_content);
 
+    // Output to RES_SYM.TXT
+    std::string res_symbols = "";
+    for(unsigned int i = 0; i < tokens.size(); i++) {
+        if (tokens[i].type != TokenType::TOKEN_IDENTIFIER) {
+            res_symbols += tokens[i].lexeme;
+
+            if (i+1 < tokens.size()) res_symbols += ", ";
+        }
+    }
+    write_file("RES_SYM.TXT", res_symbols);
+
+    // Start Parsing (Parser)
+    std::cout << "Parsing..." << std::endl;
+    Parser parser(tokens);
+    ASTNode root = parser.parse();
+
+    // Optional Running
+    if (argc == 3 || (std::string("-r").compare(argv[2]) == 0))
+    {
+        std::cout << "Interpreting..." << std::endl;
+        Interpreter interpreter(root);
+        interpreter.interpret();
+    }
 
     return 0;
 }

@@ -1,0 +1,3 @@
+x : integer ;
+x := 23.44 + 23 ;
+output << x ;

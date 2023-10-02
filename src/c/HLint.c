@@ -85,10 +85,7 @@ int main(int argc, char *argv[])
     }
     
     // Start Parsing (Parser)
-    for (size_t i = 0; i < token_arr->size; i++) {
-        Token token = token_arr->tokens[i];
-        printf("Token: %s, Type: %d\n", token.lexeme, token.type);
-    }
+    printf("No Parser Implemented");
 
     // Free memories
     dyn_str_free(dynamic_str);
