@@ -59,6 +59,18 @@ std::vector<Token> lexer(std::string lines)
     return tokens;
 }
 
+// Define a recursive function to traverse the AST
+void traverseAST(ASTNode node) {
+    // Recursively traverse child nodes
+    for (ASTNode child : node.get_child_nodes()) {
+        traverseAST(child);
+    }
+
+    // Process the current node (e.g., print its information)
+    std::cout << "Node Type: " << node.get_node_type() << ", Value: " << node.get_value() << std::endl;
+}
+
+
 int main(int argc, char *argv[])
 {
     // Show help if no arguments/too many args passed
@@ -91,7 +103,9 @@ int main(int argc, char *argv[])
 
     // Start Parsing (Parser)
     Parser parser(tokens);
-    parser.parse();
+    ASTNode root = parser.parse();
+
+    //traverseAST(root);
 
     return 0;
 }

@@ -26,7 +26,7 @@ private:
 
     // Helper
     Token get_curr_token();
-    Token peek_next_token(int next);
+    bool peek_and_compare_future_token(TokenType target_type, std::vector<std::string> target_lexemes, bool strict_matching, int next=1);
     void advance_to_next_token();
     bool match_token(TokenType target_type, std::vector<std::string> target_lexemes, bool strict_matching);
 

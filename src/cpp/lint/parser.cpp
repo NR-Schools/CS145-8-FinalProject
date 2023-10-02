@@ -10,7 +10,8 @@ Parser::Parser(const std::vector<Token> &tokens)
 
 ASTNode Parser::parse()
 {
-    if (this->tokens.size() == 0) {
+    if (this->tokens.size() == 0)
+    {
         std::cout << "No Tokens Passed" << std::endl;
         return ASTNode();
     }
@@ -24,7 +25,7 @@ ASTNode Parser::parseProgram()
     while (this->current_token_index + 1 < this->tokens.size())
     {
         ASTNode stmt = this->parseStatement();
-        rootNode.add_child_node(&stmt);
+        rootNode.add_child_node(stmt);
 
         // Move to next token
         this->advance_to_next_token();
@@ -53,7 +54,7 @@ ASTNode Parser::parseStatement()
 
         this->advance_to_next_token();
         ASTNode expression_node = this->parseExpression();
-        statementNode.add_child_node(&expression_node);
+        statementNode.add_child_node(expression_node);
 
         this->advance_to_next_token();
         if (!this->match_token(TokenType::TOKEN_SEPARATOR, {")"}, true))
@@ -64,7 +65,7 @@ ASTNode Parser::parseStatement()
 
         this->advance_to_next_token();
         ASTNode statement_node = this->parseStatement();
-        statementNode.add_child_node(&statement_node);
+        statementNode.add_child_node(statement_node);
 
         return statementNode;
     }
@@ -84,7 +85,7 @@ ASTNode Parser::parseStatement()
 
         this->advance_to_next_token();
         ASTNode expression_node = this->parseExpression();
-        statementNode.add_child_node(&expression_node);
+        statementNode.add_child_node(expression_node);
 
         this->advance_to_next_token();
         if (!this->match_token(TokenType::TOKEN_SEPARATOR, {";"}, true))
@@ -99,8 +100,15 @@ ASTNode Parser::parseStatement()
     // Check if Identifier
     if (this->match_token(TokenType::TOKEN_IDENTIFIER, {}, false))
     {
+        Token identifier = this->get_curr_token();
+        ASTNode identifier_node;
+        identifier_node.set_node_type(ASTNodeType::ATOM);
+        identifier_node.set_value(identifier.lexeme);
+        statementNode.add_child_node(identifier_node);
+
         this->advance_to_next_token();
 
+        // Check if Declaration
         if (this->match_token(TokenType::TOKEN_OPERATOR, {":"}, true))
         {
             statementNode.set_node_type(ASTNodeType::DECLARATION);
@@ -116,7 +124,7 @@ ASTNode Parser::parseStatement()
             ASTNode identifier_data_type;
             identifier_data_type.set_node_type(ASTNodeType::ATOM);
             identifier_data_type.set_value(this->get_curr_token().lexeme);
-            statementNode.add_child_node(&identifier_data_type);
+            statementNode.add_child_node(identifier_data_type);
 
             this->advance_to_next_token();
             if (!this->match_token(TokenType::TOKEN_SEPARATOR, {";"}, true))
@@ -128,14 +136,16 @@ ASTNode Parser::parseStatement()
             return statementNode;
         }
 
+        // Check if Assignment
         if (this->match_token(TokenType::TOKEN_OPERATOR, {":="}, true))
         {
             statementNode.set_node_type(ASTNodeType::ASSIGNMENT);
             statementNode.set_value(":=");
 
+            // Check if this is for expression or factor
             this->advance_to_next_token();
             ASTNode expression_node = this->parseExpression();
-            statementNode.add_child_node(&expression_node);
+            statementNode.add_child_node(expression_node);
 
             this->advance_to_next_token();
             if (!this->match_token(TokenType::TOKEN_SEPARATOR, {";"}, true))
@@ -157,25 +167,27 @@ ASTNode Parser::parseStatement()
 ASTNode Parser::parseExpression()
 {
     ASTNode expressionNode;
-    expressionNode.set_node_type(ASTNodeType::BINARY_OP);
+    expressionNode.set_node_type(ASTNodeType::NONE);
     ASTNode term_node = this->parseTerm();
-    expressionNode.add_child_node(&term_node);
+    expressionNode.add_child_node(term_node);
 
-    Token peeked_token = this->peek_next_token(1);
-    if ((peeked_token.type == TokenType::TOKEN_SEPARATOR)) {
+    if (this->peek_and_compare_future_token(TokenType::TOKEN_SEPARATOR, {}, false))
+    {
         return expressionNode;
     }
 
     this->advance_to_next_token();
     expressionNode.set_value(this->get_curr_token().lexeme);
 
-
     // Check if Comparison
     if (this->match_token(TokenType::TOKEN_OPERATOR, {"!=", "==", "<=", ">=", "<", ">"}, true))
     {
+        expressionNode.set_node_type(ASTNodeType::BINARY_OP);
+        expressionNode.set_value(this->get_curr_token().lexeme);
+
         this->advance_to_next_token();
         ASTNode term_node = this->parseTerm();
-        expressionNode.add_child_node(&term_node);
+        expressionNode.add_child_node(term_node);
 
         return expressionNode;
     }
@@ -183,9 +195,12 @@ ASTNode Parser::parseExpression()
     // Check if Arithmetic
     if (this->match_token(TokenType::TOKEN_OPERATOR, {"+", "-"}, true))
     {
+        expressionNode.set_node_type(ASTNodeType::BINARY_OP);
+        expressionNode.set_value(this->get_curr_token().lexeme);
+
         this->advance_to_next_token();
         ASTNode term_node = this->parseTerm();
-        expressionNode.add_child_node(&term_node);
+        expressionNode.add_child_node(term_node);
 
         return expressionNode;
     }
@@ -201,7 +216,8 @@ ASTNode Parser::parseTerm()
     ASTNode termNode;
 
     ASTNode factorNode = this->parseFactor();
-    termNode.add_child_node(&factorNode);
+    termNode.set_node_type(ASTNodeType::NONE);
+    termNode.add_child_node(factorNode);
 
     return termNode;
 }
@@ -213,6 +229,7 @@ ASTNode Parser::parseFactor()
         this->match_token(TokenType::TOKEN_INTEGER, {}, false) ||
         this->match_token(TokenType::TOKEN_DECIMAL, {}, false))
     {
+        factorNode.set_node_type(ASTNodeType::ATOM);
         factorNode.set_value(this->get_curr_token().lexeme);
         return factorNode;
     }
@@ -228,14 +245,32 @@ Token Parser::get_curr_token()
     return this->tokens[this->current_token_index];
 }
 
-Token Parser::peek_next_token(int next)
+bool Parser::peek_and_compare_future_token(TokenType target_type, std::vector<std::string> target_lexemes, bool strict_matching, int next)
 {
+    // Get Token
     int peek_index = this->current_token_index + next;
-    if (peek_index < this->tokens.size())
+    if (peek_index >= this->tokens.size())
     {
-        return this->tokens[peek_index];
+        return false;
     }
-    return Token(TokenType::TOKEN_INVALID);
+    Token future_token = this->tokens[peek_index];
+
+    // Compare Token
+    if (target_type != future_token.type)
+    {
+        return false;
+    }
+
+    if (strict_matching)
+    {
+        for (std::string target_lexeme : target_lexemes)
+        {
+            if (target_lexeme.compare(future_token.lexeme) == 0)
+                return true;
+        }
+        return false;
+    }
+    return true;
 }
 
 void Parser::advance_to_next_token()
@@ -249,7 +284,8 @@ void Parser::advance_to_next_token()
 bool Parser::match_token(TokenType target_type, std::vector<std::string> target_lexemes, bool strict_matching)
 {
     Token current_token = this->get_curr_token();
-    if (target_type != current_token.type) {
+    if (target_type != current_token.type)
+    {
         return false;
     }
 
@@ -267,7 +303,7 @@ bool Parser::match_token(TokenType target_type, std::vector<std::string> target_
 
 void Parser::unexpected_token_error(std::string expected_token)
 {
-    std::string message = "Syntax Error: Expecting \"" + expected_token + "\" but was \"" + this->get_curr_token().lexeme + "\"" ;
+    std::string message = "Syntax Error: Expecting \"" + expected_token + "\" but was \"" + this->get_curr_token().lexeme + "\"";
     std::cout << message << std::endl;
     exit(1);
 }

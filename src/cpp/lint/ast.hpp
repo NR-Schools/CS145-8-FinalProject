@@ -17,7 +17,9 @@ enum ASTNodeType {
     BINARY_OP,
     UNARY_OP,
 
-    ATOM
+    ATOM,
+
+    NONE
 };
 
 class ASTNode {
@@ -27,9 +29,13 @@ public:
 
     void set_node_type(ASTNodeType _node_type);
     void set_value(std::string _value);
-    void add_child_node(ASTNode *_child_node);
+    void add_child_node(ASTNode _child_node);
+
+    ASTNodeType get_node_type();
+    std::string get_value();
+    std::vector<ASTNode> get_child_nodes();
 private:
     ASTNodeType node_type;
     std::string value;
-    std::vector<ASTNode*> child_nodes;
+    std::vector<ASTNode> child_nodes;
 };
