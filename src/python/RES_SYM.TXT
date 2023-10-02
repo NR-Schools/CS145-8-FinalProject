@@ -1,13 +1,20 @@
 {
     "reserved_words": [
         "integer",
+        "double",
+        "if",
         "output"
     ],
     "symbols": [
         ":",
         ";",
+        ":",
+        ";",
         ":=",
         ";",
+        "(",
+        "<",
+        ")",
         "<<",
         ";"
     ]
