@@ -13,6 +13,7 @@ ASTNode Parser::parse()
     if (this->tokens.size() == 0)
     {
         std::cout << "No Tokens Passed" << std::endl;
+        exit(1);
         return ASTNode();
     }
     return parseProgram();
@@ -31,7 +32,6 @@ ASTNode Parser::parseProgram()
         this->advance_to_next_token();
     }
 
-    std::cout << "Congrats!!" << std::endl;
     return rootNode;
 }
 

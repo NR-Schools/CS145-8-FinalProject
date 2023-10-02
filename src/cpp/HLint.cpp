@@ -6,12 +6,13 @@
 
 #include "lint/lexer.hpp"
 #include "lint/parser.hpp"
+#include "interpreter/interpreter.hpp"
 
 
 void help()
 {
     printf("Please pass the source file path as the only argument\n");
-    printf("HLint (source file path)\n");
+    printf("HLint (source file path) [-r]\n");
 }
 
 std::string read_file(const char *filename)
@@ -59,35 +60,25 @@ std::vector<Token> lexer(std::string lines)
     return tokens;
 }
 
-// Define a recursive function to traverse the AST
-void traverseAST(ASTNode node) {
-    // Recursively traverse child nodes
-    for (ASTNode child : node.get_child_nodes()) {
-        traverseAST(child);
-    }
-
-    // Process the current node (e.g., print its information)
-    std::cout << "Node Type: " << node.get_node_type() << ", Value: " << node.get_value() << std::endl;
-}
-
 
 int main(int argc, char *argv[])
 {
     // Show help if no arguments/too many args passed
-    if (argc <= 1 || argc > 2)
+    if (argc <= 1 || argc > 3)
     {
         help();
         return 0;
     }
 
     // Start Reading File
-    std::string rfile_content = read_file(argv[argc-1]);
+    std::string rfile_content = read_file(argv[1]);
 
     // Output to NOSPACES.TXT
     rfile_content.erase(remove(rfile_content.begin(), rfile_content.end(), ' '), rfile_content.end());
     write_file("NOSPACES.TXT", rfile_content);
 
     // Start Scanning (Lexer)
+    std::cout << "Scanning..." << std::endl;
     std::vector<Token> tokens = lexer(rfile_content);
 
     // Output to RES_SYM.TXT
@@ -102,10 +93,17 @@ int main(int argc, char *argv[])
     write_file("RES_SYM.TXT", res_symbols);
 
     // Start Parsing (Parser)
+    std::cout << "Parsing..." << std::endl;
     Parser parser(tokens);
     ASTNode root = parser.parse();
 
-    //traverseAST(root);
+    // Optional Running
+    if (argc == 3 || (std::string("-r").compare(argv[2]) == 0))
+    {
+        std::cout << "Interpreting..." << std::endl;
+        Interpreter interpreter(root);
+        interpreter.interpret();
+    }
 
     return 0;
 }
