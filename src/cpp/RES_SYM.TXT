@@ -1,0 +1,1 @@
+:, integer, ;, :, double, ;, :=, 3, ;, if, (, <, 5, ), output, <<, ;
