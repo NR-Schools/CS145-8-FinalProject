@@ -16,7 +16,6 @@ public:
 private:
     std::vector<Token> tokens;
     size_t current_token_index;
-    bool err_flag;
 
     // Parse from Top to Bottom
     ASTNode parseProgram();
@@ -31,7 +30,8 @@ private:
     void advance_to_next_token();
     bool match_token(TokenType target_type, std::vector<std::string> target_lexemes, bool strict_matching);
 
-    void error_message();
+    void unexpected_token_error(std::string expected_token);
+    void unable_to_parse_error(std::string level);
 };
 
 

@@ -6,7 +6,6 @@ Parser::Parser(const std::vector<Token> &tokens)
 {
     this->tokens = tokens;
     this->current_token_index = 0;
-    this->err_flag = false;
 }
 
 ASTNode Parser::parse()
@@ -49,7 +48,7 @@ ASTNode Parser::parseStatement()
         if (!this->match_token(TokenType::TOKEN_SEPARATOR, {"("}, true))
         {
             // Error
-            this->error_message();
+            this->unexpected_token_error("(");
         }
 
         this->advance_to_next_token();
@@ -60,7 +59,7 @@ ASTNode Parser::parseStatement()
         if (!this->match_token(TokenType::TOKEN_SEPARATOR, {")"}, true))
         {
             // Error
-            this->error_message();
+            this->unexpected_token_error(")");
         }
 
         this->advance_to_next_token();
@@ -80,7 +79,7 @@ ASTNode Parser::parseStatement()
         if (!this->match_token(TokenType::TOKEN_OPERATOR, {"<<"}, true))
         {
             // Error
-            this->error_message();
+            this->unexpected_token_error("<<");
         }
 
         this->advance_to_next_token();
@@ -91,7 +90,7 @@ ASTNode Parser::parseStatement()
         if (!this->match_token(TokenType::TOKEN_SEPARATOR, {";"}, true))
         {
             // Error
-            this->error_message();
+            this->unexpected_token_error(";");
         }
 
         return statementNode;
@@ -111,7 +110,7 @@ ASTNode Parser::parseStatement()
             if (!this->match_token(TokenType::TOKEN_RESERVED, {"integer", "double"}, true))
             {
                 // Error
-                this->error_message();
+                this->unexpected_token_error("integer or double");
             }
 
             ASTNode identifier_data_type;
@@ -123,7 +122,7 @@ ASTNode Parser::parseStatement()
             if (!this->match_token(TokenType::TOKEN_SEPARATOR, {";"}, true))
             {
                 // Error
-                this->error_message();
+                this->unexpected_token_error(";");
             }
 
             return statementNode;
@@ -142,7 +141,7 @@ ASTNode Parser::parseStatement()
             if (!this->match_token(TokenType::TOKEN_SEPARATOR, {";"}, true))
             {
                 // Error
-                this->error_message();
+                this->unexpected_token_error(";");
             }
 
             return statementNode;
@@ -150,7 +149,9 @@ ASTNode Parser::parseStatement()
     }
 
     // Error
-    this->error_message();
+    this->unable_to_parse_error("statement");
+
+    return ASTNode();
 }
 
 ASTNode Parser::parseExpression()
@@ -190,7 +191,9 @@ ASTNode Parser::parseExpression()
     }
 
     // Error
-    this->error_message();
+    this->unable_to_parse_error("expression");
+
+    return ASTNode();
 }
 
 ASTNode Parser::parseTerm()
@@ -215,7 +218,9 @@ ASTNode Parser::parseFactor()
     }
 
     // Error
-    this->error_message();
+    this->unable_to_parse_error("factor");
+
+    return ASTNode();
 }
 
 Token Parser::get_curr_token()
@@ -260,10 +265,16 @@ bool Parser::match_token(TokenType target_type, std::vector<std::string> target_
     return true;
 }
 
-void Parser::error_message()
+void Parser::unexpected_token_error(std::string expected_token)
 {
-    this->err_flag = true;
-    std::string message = "Syntax Error: Unexpected Token \"" + this->get_curr_token().lexeme + "\"" + '\0';
+    std::string message = "Syntax Error: Expecting \"" + expected_token + "\" but was \"" + this->get_curr_token().lexeme + "\"" ;
+    std::cout << message << std::endl;
+    exit(1);
+}
+
+void Parser::unable_to_parse_error(std::string level)
+{
+    std::string message = "Syntax Error: Unable to parse " + level + ", token found was \"" + this->get_curr_token().lexeme + "\"";
     std::cout << message << std::endl;
     exit(1);
 }
