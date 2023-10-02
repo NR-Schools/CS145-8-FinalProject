@@ -2,3 +2,4 @@
 *.exe
 */NOSPACES.TXT
 */RES_SYM.TXT
+*.pyc
