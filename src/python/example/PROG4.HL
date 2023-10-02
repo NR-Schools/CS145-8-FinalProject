@@ -8,9 +8,7 @@ b := 3.45;
 c := 112.34;
 d := 10;
 
-if (a != 2) output << a+d;
-if (b > c) output << b+c;
-if (a < b) output << a;
-if (c == d) output << d;
-if (a <= d) output << a;
-if (b >= d) output << b;
+if (a != 2): output << a+d;
+if (b > c): output << b+c;
+if (a < b): output << a;
+if (c == d): output << d;
