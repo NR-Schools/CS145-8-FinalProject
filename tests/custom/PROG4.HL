@@ -1,16 +1,10 @@
-a: integer;
-b: double;
-c: double;
-d: integer;
+a : integer ;
+b : double ;
+c : double ;
 
-a := 2;
-b := 3.45;
-c := 112.34;
-d := 10;
+a := 2 ;
+b := a + 3 ;
+c := a + b ;
+e := 2 ;
 
-if (a != 2) output << a+d;
-if (b > c) output << b+c;
-if (a < b) output << a;
-if (c == d) output << d;
-if (a <= d) output << a;
-if (b >= d) output << b;
+output << c ;
