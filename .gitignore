@@ -1,5 +1,5 @@
 /.vscode
 *.exe
-*/NOSPACES.TXT
-*/RES_SYM.TXT
+**/NOSPACES.TXT
+**/RES_SYM.TXT
 *.pyc
