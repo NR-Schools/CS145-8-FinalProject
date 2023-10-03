@@ -96,6 +96,7 @@ int main(int argc, char *argv[])
     std::cout << "Parsing..." << std::endl;
     Parser parser(tokens);
     ASTNode root = parser.parse();
+    std::cout << "No Syntax Error!" << std::endl;
 
     // Optional Running
     if (argc == 3 || (std::string("-r").compare(argv[2]) == 0))

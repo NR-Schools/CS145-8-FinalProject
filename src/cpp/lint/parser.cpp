@@ -168,23 +168,25 @@ ASTNode Parser::parseExpression()
 {
     ASTNode expressionNode;
     expressionNode.set_node_type(ASTNodeType::NONE);
-    ASTNode term_node = this->parseTerm();
-    expressionNode.add_child_node(term_node);
+    ASTNode initial_term_node = this->parseTerm();
+    expressionNode.add_child_node(initial_term_node);
 
+    // Check if next token is a separator
     if (this->peek_and_compare_future_token(TokenType::TOKEN_SEPARATOR, {}, false))
     {
         return expressionNode;
     }
 
-    this->advance_to_next_token();
-    expressionNode.set_value(this->get_curr_token().lexeme);
+    expressionNode.set_node_type(ASTNodeType::BINARY_OP);
 
     // Check if Comparison
-    if (this->match_token(TokenType::TOKEN_OPERATOR, {"!=", "==", "<=", ">=", "<", ">"}, true))
+    if (this->peek_and_compare_future_token(TokenType::TOKEN_OPERATOR, {"!=", "==", "<=", ">=", "<", ">"}, true))
     {
-        expressionNode.set_node_type(ASTNodeType::BINARY_OP);
+        // Push back operator
+        this->advance_to_next_token();
         expressionNode.set_value(this->get_curr_token().lexeme);
 
+        // Get next term
         this->advance_to_next_token();
         ASTNode term_node = this->parseTerm();
         expressionNode.add_child_node(term_node);
@@ -193,16 +195,28 @@ ASTNode Parser::parseExpression()
     }
 
     // Check if Arithmetic
-    if (this->match_token(TokenType::TOKEN_OPERATOR, {"+", "-"}, true))
+    if (this->peek_and_compare_future_token(TokenType::TOKEN_OPERATOR, {"+", "-"}, true))
     {
-        expressionNode.set_node_type(ASTNodeType::BINARY_OP);
-        expressionNode.set_value(this->get_curr_token().lexeme);
+        while (this->peek_and_compare_future_token(TokenType::TOKEN_OPERATOR, {"+", "-"}, true))
+        {
+            ASTNode _node;
 
-        this->advance_to_next_token();
-        ASTNode term_node = this->parseTerm();
-        expressionNode.add_child_node(term_node);
+            // Push back operator
+            this->advance_to_next_token();
+            _node.set_value(this->get_curr_token().lexeme);
 
-        return expressionNode;
+            // Get next term
+            this->advance_to_next_token();
+            ASTNode term_node = this->parseTerm();
+            
+            // Push initial_term_node and term_node under _node and replace initial_term_node with _node
+            _node.add_child_node(initial_term_node);
+            _node.add_child_node(term_node);
+            _node.set_node_type(ASTNodeType::BINARY_OP);
+            initial_term_node = _node;
+        }
+
+        return initial_term_node;
     }
 
     // Error
