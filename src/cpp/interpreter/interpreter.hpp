@@ -1,7 +1,8 @@
 #include <iostream>
+#include <sstream>
 #include <string>
-#include <unordered_map>
 #include <type_traits>
+#include <unordered_map>
 
 #include "../lint/ast.hpp"
 
@@ -46,6 +47,7 @@ private:
     std::unordered_map<std::string, VariableInfo> var_map;
 
     std::string runtime_casting(ExprValType type, std::string value);
+    bool is_valid_value(std::string value_str);
     
     template <typename T, typename = typename std::enable_if<std::is_same<T, int>::value ||
                                               std::is_same<T, double>::value>::type>

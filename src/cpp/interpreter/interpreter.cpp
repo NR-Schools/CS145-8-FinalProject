@@ -36,34 +36,60 @@ std::string Interpreter::runtime_casting(ExprValType type, std::string value)
     return new_value;
 }
 
+bool Interpreter::is_valid_value(std::string value_str)
+{
+    std::istringstream stream(value_str);
+    double value;
+    return (stream >> std::noskipws >> value) && (stream.eof() || stream.peek() == '\n');
+}
+
 template <typename T, typename>
 T Interpreter::perform_calculation(std::string left, std::string right, std::string op)
 {
     T left_val = (T)std::stod(left);
     T right_val = (T)std::stod(right);
 
-    if (op.compare("+") == 0) return left_val + right_val;
-    else if (op.compare("-") == 0) return left_val - right_val;
+    if (op.compare("+") == 0)
+        return left_val + right_val;
+    else if (op.compare("-") == 0)
+        return left_val - right_val;
 
-    else if (op.compare("==") == 0) return left_val == right_val;
-    else if (op.compare("!=") == 0) return left_val != right_val;
-    else if (op.compare(">") == 0) return left_val > right_val;
-    else if (op.compare(">=") == 0) return left_val >= right_val;
-    else if (op.compare("<") == 0) return left_val < right_val;
-    else if (op.compare("<=") == 0) return left_val <= right_val;
+    else if (op.compare("==") == 0)
+        return left_val == right_val;
+    else if (op.compare("!=") == 0)
+        return left_val != right_val;
+    else if (op.compare(">") == 0)
+        return left_val > right_val;
+    else if (op.compare(">=") == 0)
+        return left_val >= right_val;
+    else if (op.compare("<") == 0)
+        return left_val < right_val;
+    else if (op.compare("<=") == 0)
+        return left_val <= right_val;
 
     return 0;
 }
 
-
 std::string Interpreter::get_value_if_variable(std::string unknown_atom)
 {
+    std::string value = unknown_atom;
+
     // If variable -> return var value, else, just return value
-    if (this->var_map.find(unknown_atom) != this->var_map.end())
+    if (this->var_map.find(value) != this->var_map.end())
     {
-        return this->var_map[unknown_atom].value;
+        value =  this->var_map[unknown_atom].value;
     }
-    return unknown_atom;
+
+    // Check if valid value
+    if (!this->is_valid_value(value))
+    {
+        // Runtime Error
+        this->runtime_error(
+            "Unexpected value encountered on runtime: \"" + value + "\""
+        );
+    }
+
+    return value;
 }
 
 ExprValType Interpreter::assert_type_from_value(std::string unknown_value)
@@ -131,13 +157,17 @@ void Interpreter::interpret_statement(ASTNode statementNode)
         // Get value from expression
         ExprVal value_node = this->interpret_expression(statementNode.get_child_nodes()[1]);
 
+        // Check for undeclared variable
+        if (this->var_map.find(identifier) == this->var_map.end())
+        {
+            this->runtime_error("Undeclared variable \"" + identifier + "\"");
+        }
+
         // Assign variable
         this->var_map[identifier] = VariableInfo::assignment(
             this->var_map[identifier],
             this->runtime_casting(
-                this->var_map[identifier].data_type, value_node.value
-            )
-        );
+                this->var_map[identifier].data_type, value_node.value));
     }
     break;
     }
@@ -191,8 +221,15 @@ ExprVal Interpreter::interpret_expression(ASTNode expressionNode)
         expr_val_bin.value = calc_val_str;
         return expr_val_bin;
     }
+
+    // Runtime Error
+    this->runtime_error("cannot evaluate expression");
+    return ExprVal();
 }
 
 void Interpreter::runtime_error(std::string content)
 {
+    std::cout << "Runtime Error: " << content << std::endl;
+    std::cout << "Exiting Immediately..." << std::endl;
+    exit(1);
 }
