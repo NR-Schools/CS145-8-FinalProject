@@ -12,7 +12,6 @@
 void help()
 {
     printf("Please pass the source file path as the only argument\n");
-    printf("HLint (source file path) [-r]\n");
 }
 
 std::string read_file(const char *filename)
@@ -50,7 +49,7 @@ std::vector<Token> lexer(std::string lines)
     {
         if (token.type == TOKEN_INVALID)
         {
-            std::cerr << "Invalid token: " << token.lexeme << " at line " << src_line << '\n';
+            //std::cerr << "ERROR" << '\n';
             exit(1);
         }
 
@@ -64,7 +63,7 @@ std::vector<Token> lexer(std::string lines)
 int main(int argc, char *argv[])
 {
     // Show help if no arguments/too many args passed
-    if (argc <= 1 || argc > 3)
+    if (argc <= 1 || argc > 2)
     {
         help();
         return 0;
@@ -78,7 +77,6 @@ int main(int argc, char *argv[])
     write_file("NOSPACES.TXT", rfile_content);
 
     // Start Scanning (Lexer)
-    std::cout << "Scanning..." << std::endl;
     std::vector<Token> tokens = lexer(rfile_content);
 
     // Output to RES_SYM.TXT
@@ -102,21 +100,15 @@ int main(int argc, char *argv[])
     write_file("RES_SYM.TXT", res_words + '\n' + symbols);
 
     // Start Parsing (Parser)
-    std::cout << "Parsing..." << std::endl;
-    Parser parser(tokens);
+    Parser parser(tokens, false, false);
     ASTNode root = parser.parse();
     
-    if (parser.err_flag) exit(1);
-    
-    std::cout << "No Syntax Error!" << std::endl;
-
-    // Optional Running
-    if (argc == 3 || (std::string("-r").compare(argv[2]) == 0))
-    {
-        std::cout << "Interpreting..." << std::endl;
-        Interpreter interpreter(root);
-        interpreter.interpret();
+    if (parser.err_flag) {
+        std::cout << "ERROR" << std::endl;
+        exit(1);
     }
+    
+    std::cout << "NO ERROR(S) FOUND" << std::endl;
 
     return 0;
 }

@@ -2,18 +2,22 @@
 
 #include "parser.hpp"
 
-Parser::Parser(const std::vector<Token> &tokens)
+Parser::Parser(const std::vector<Token> &tokens, bool _enable_print, bool _allow_short_circuit)
 {
     this->tokens = tokens;
     this->current_token_index = 0;
+    this->err_flag = false;
+    this->enable_print = _enable_print;
+    this->allow_short_circuit = _allow_short_circuit;
 }
 
 ASTNode Parser::parse()
 {
-    if (this->tokens.size() == 0)
+    if (this->tokens.size() == 0 && this->enable_print)
     {
         std::cout << "No Tokens Passed" << std::endl;
-        exit(1);
+        if (this->allow_short_circuit) exit(1);
+        this->err_flag = true;
         return ASTNode();
     }
     return parseProgram();
@@ -28,6 +32,11 @@ ASTNode Parser::parseProgram()
         ASTNode stmt = this->parseStatement();
         rootNode.add_child_node(stmt);
 
+        // Check err
+        if (this->err_flag) {
+            return ASTNode();
+        }
+
         // Move to next token
         this->advance_to_next_token();
     }
@@ -37,6 +46,11 @@ ASTNode Parser::parseProgram()
 
 ASTNode Parser::parseStatement()
 {
+    if (this->err_flag)
+    {
+        return ASTNode();
+    }
+
     ASTNode statementNode;
 
     // Check if this is an IfNode
@@ -166,8 +180,14 @@ ASTNode Parser::parseStatement()
 
 ASTNode Parser::parseExpression()
 {
+    if (this->err_flag)
+    {
+        return ASTNode();
+    }
+
     ASTNode expressionNode;
     expressionNode.set_node_type(ASTNodeType::NONE);
+
     ASTNode initial_term_node = this->parseTerm();
     expressionNode.add_child_node(initial_term_node);
 
@@ -208,7 +228,7 @@ ASTNode Parser::parseExpression()
             // Get next term
             this->advance_to_next_token();
             ASTNode term_node = this->parseTerm();
-            
+
             // Push initial_term_node and term_node under _node and replace initial_term_node with _node
             _node.add_child_node(initial_term_node);
             _node.add_child_node(term_node);
@@ -227,6 +247,11 @@ ASTNode Parser::parseExpression()
 
 ASTNode Parser::parseTerm()
 {
+    if (this->err_flag)
+    {
+        return ASTNode();
+    }
+
     ASTNode termNode;
 
     ASTNode factorNode = this->parseFactor();
@@ -238,6 +263,11 @@ ASTNode Parser::parseTerm()
 
 ASTNode Parser::parseFactor()
 {
+    if (this->err_flag)
+    {
+        return ASTNode();
+    }
+
     ASTNode factorNode;
     if (this->match_token(TokenType::TOKEN_IDENTIFIER, {}, false) ||
         this->match_token(TokenType::TOKEN_INTEGER, {}, false) ||
@@ -317,14 +347,22 @@ bool Parser::match_token(TokenType target_type, std::vector<std::string> target_
 
 void Parser::unexpected_token_error(std::string expected_token)
 {
-    std::string message = "Syntax Error: Expecting \"" + expected_token + "\" but was \"" + this->get_curr_token().lexeme + "\"";
-    std::cout << message << std::endl;
-    exit(1);
+    if (this->enable_print)
+    {
+        std::string message = "Syntax Error: Expecting \"" + expected_token + "\" but was \"" + this->get_curr_token().lexeme + "\"";
+        std::cout << message << std::endl;
+    }
+    if (this->allow_short_circuit) exit(1);
+    this->err_flag = true;
 }
 
 void Parser::unable_to_parse_error(std::string level)
 {
-    std::string message = "Syntax Error: Unable to parse " + level + ", token found was \"" + this->get_curr_token().lexeme + "\"";
-    std::cout << message << std::endl;
-    exit(1);
+    if (this->enable_print)
+    {
+        std::string message = "Syntax Error: Unable to parse " + level + ", token found was \"" + this->get_curr_token().lexeme + "\"";
+        std::cout << message << std::endl;
+    }
+    if (this->allow_short_circuit) exit(1);
+    this->err_flag = true;
 }
