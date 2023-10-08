@@ -21,3 +21,9 @@ def get_RES_SYM_TXT(source_code, reserved_words_filter, symbols_filter):
     with open("RES_SYM.TXT", "w") as f:
         json.dump(RES_SYM, f, indent=4)
     return source_code
+
+def get_NOSPACES_TXT(source_code):
+    source_code = source_code.replace(" ", "")
+    with open("NOSPACES.TXT", "w") as f:
+        f.write(source_code)
+    return source_code
