@@ -50,7 +50,7 @@ std::vector<Token> lexer(std::string lines)
     {
         if (token.type == TOKEN_INVALID)
         {
-            std::cerr << "Invalid token: " << token.lexeme << " at line " << src_line;
+            std::cerr << "Invalid token: " << token.lexeme << " at line " << src_line << '\n';
             break;
         }
 
