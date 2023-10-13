@@ -29,8 +29,8 @@ Token getNextToken(std::string input, int &index, int &src_line)
     State current_state = State::START;
 
     // Number and String end pattern
-    const char *NUMBER_ENDS = " ();+-<>=!";
-    const char *IDENT_ENDS = " ();:+-<>=!";
+    const char *NUMBER_ENDS = " ();+-*/<>=!";
+    const char *IDENT_ENDS = " ();:+-*/<>=!";
 
     // For numbers
     bool has_used_dot = false;
@@ -64,11 +64,12 @@ Token getNextToken(std::string input, int &index, int &src_line)
         case State::START:
         {
             // Check all purely single character tokens only
-            if (curr_char == '(' || curr_char == ')' || curr_char == ';' || curr_char == '+' || curr_char == '-')
+            if (curr_char == '(' || curr_char == ')' || curr_char == ';' ||
+                curr_char == '+' || curr_char == '-' || curr_char == '*' || curr_char == '/')
             {
                 if (curr_char == '(' || curr_char == ')' || curr_char == ';')
                     token.type = TOKEN_SEPARATOR;
-                else if (curr_char == '+' || curr_char == '-')
+                else if (curr_char == '+' || curr_char == '-' || curr_char == '*' || curr_char == '/')
                     token.type = TOKEN_OPERATOR;
 
                 token.lexeme += curr_char;

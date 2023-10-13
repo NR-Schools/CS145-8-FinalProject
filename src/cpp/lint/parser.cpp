@@ -16,7 +16,8 @@ ASTNode Parser::parse()
     if (this->tokens.size() == 0 && this->enable_print)
     {
         std::cout << "No Tokens Passed" << std::endl;
-        if (this->allow_short_circuit) exit(1);
+        if (this->allow_short_circuit)
+            exit(1);
         this->err_flag = true;
         return ASTNode();
     }
@@ -33,7 +34,8 @@ ASTNode Parser::parseProgram()
         rootNode.add_child_node(stmt);
 
         // Check err
-        if (this->err_flag) {
+        if (this->err_flag)
+        {
             return ASTNode();
         }
 
@@ -214,7 +216,7 @@ ASTNode Parser::parseExpression()
         return expressionNode;
     }
 
-    // Check if Arithmetic
+    // Check if Arithmetic (+, -)
     if (this->peek_and_compare_future_token(TokenType::TOKEN_OPERATOR, {"+", "-"}, true))
     {
         while (this->peek_and_compare_future_token(TokenType::TOKEN_OPERATOR, {"+", "-"}, true))
@@ -254,9 +256,34 @@ ASTNode Parser::parseTerm()
 
     ASTNode termNode;
 
-    ASTNode factorNode = this->parseFactor();
+    ASTNode initial_factor_node = this->parseFactor();
     termNode.set_node_type(ASTNodeType::NONE);
-    termNode.add_child_node(factorNode);
+    termNode.add_child_node(initial_factor_node);
+
+    // Check if Arithmetric (*, /)
+    if (this->peek_and_compare_future_token(TokenType::TOKEN_OPERATOR, {"*", "/"}, true))
+    {
+        while (this->peek_and_compare_future_token(TokenType::TOKEN_OPERATOR, {"*", "/"}, true))
+        {
+            ASTNode _node;
+
+            // Push back operator
+            this->advance_to_next_token();
+            _node.set_value(this->get_curr_token().lexeme);
+
+            // Get next term
+            this->advance_to_next_token();
+            ASTNode term_node = this->parseTerm();
+
+            // Push initial_term_node and term_node under _node and replace initial_term_node with _node
+            _node.add_child_node(initial_factor_node);
+            _node.add_child_node(term_node);
+            _node.set_node_type(ASTNodeType::BINARY_OP);
+            initial_factor_node = _node;
+        }
+
+        return initial_factor_node;
+    }
 
     return termNode;
 }
@@ -352,7 +379,8 @@ void Parser::unexpected_token_error(std::string expected_token)
         std::string message = "Syntax Error: Expecting \"" + expected_token + "\" but was \"" + this->get_curr_token().lexeme + "\"";
         std::cout << message << std::endl;
     }
-    if (this->allow_short_circuit) exit(1);
+    if (this->allow_short_circuit)
+        exit(1);
     this->err_flag = true;
 }
 
@@ -363,6 +391,7 @@ void Parser::unable_to_parse_error(std::string level)
         std::string message = "Syntax Error: Unable to parse " + level + ", token found was \"" + this->get_curr_token().lexeme + "\"";
         std::cout << message << std::endl;
     }
-    if (this->allow_short_circuit) exit(1);
+    if (this->allow_short_circuit)
+        exit(1);
     this->err_flag = true;
 }

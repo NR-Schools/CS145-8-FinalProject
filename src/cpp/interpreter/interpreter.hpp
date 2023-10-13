@@ -53,6 +53,12 @@ private:
                                               std::is_same<T, double>::value>::type>
     T perform_calculation(std::string left, std::string right, std::string op);
 
+    template <typename T, typename = typename std::enable_if<std::is_same<T, int>::value ||
+                                              std::is_same<T, double>::value>::type>
+    T calculated_expression_formatter(T val);
+    
+    std::string remove_trailing_zeroes(ExprVal value);
+
     std::string get_value_if_variable(std::string unknown_atom);
     ExprValType assert_type_from_value(std::string unknown_value);
 

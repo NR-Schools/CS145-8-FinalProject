@@ -48,26 +48,65 @@ T Interpreter::perform_calculation(std::string left, std::string right, std::str
 {
     T left_val = (T)std::stod(left);
     T right_val = (T)std::stod(right);
+    T final_val;
 
     if (op.compare("+") == 0)
-        return left_val + right_val;
+        final_val = left_val + right_val;
     else if (op.compare("-") == 0)
-        return left_val - right_val;
+        final_val = left_val - right_val;
+    else if (op.compare("*") == 0)
+        final_val = left_val * right_val;
+    else if (op.compare("/") == 0)
+        final_val = left_val / right_val;
 
     else if (op.compare("==") == 0)
-        return left_val == right_val;
+        final_val = left_val == right_val;
     else if (op.compare("!=") == 0)
-        return left_val != right_val;
+        final_val = left_val != right_val;
     else if (op.compare(">") == 0)
-        return left_val > right_val;
+        final_val = left_val > right_val;
     else if (op.compare(">=") == 0)
-        return left_val >= right_val;
+        final_val = left_val >= right_val;
     else if (op.compare("<") == 0)
-        return left_val < right_val;
+        final_val = left_val < right_val;
     else if (op.compare("<=") == 0)
-        return left_val <= right_val;
+        final_val = left_val <= right_val;
+    else
+        this->runtime_error("Unsupported operation: update this interpreter for additional operation support");
 
-    return 0;
+    return final_val;
+}
+
+template <typename T, typename>
+T Interpreter::calculated_expression_formatter(T val)
+{
+    // Check if double
+    // via casting to string
+    ExprValType val_type = this->assert_type_from_value(std::to_string(val));
+
+    if (val_type == ExprValType::DOUBLE)
+    {
+        double value = (int)(val * 100 + .5);
+        return (double)value / 100;
+    }
+    return val;
+}
+
+std::string Interpreter::remove_trailing_zeroes(ExprVal expr_value)
+{
+    // Only perform if value is double
+    if (expr_value.type == ExprValType::DOUBLE)
+    {
+        std::string expr_val_str = expr_value.value + '0';
+        int end = 0;
+        for (int i = 0; i < expr_val_str.length(); i++)
+        {
+            if (expr_val_str[i] != '0')
+                end = i;
+        }
+        return expr_val_str.substr(0, end+1);
+    }
+    return expr_value.value;
 }
 
 std::string Interpreter::get_value_if_variable(std::string unknown_atom)
@@ -77,7 +116,7 @@ std::string Interpreter::get_value_if_variable(std::string unknown_atom)
     // If variable -> return var value, else, just return value
     if (this->var_map.find(value) != this->var_map.end())
     {
-        value =  this->var_map[unknown_atom].value;
+        value = this->var_map[unknown_atom].value;
     }
 
     // Check if valid value
@@ -85,8 +124,7 @@ std::string Interpreter::get_value_if_variable(std::string unknown_atom)
     {
         // Runtime Error
         this->runtime_error(
-            "Unexpected value encountered on runtime: \"" + value + "\""
-        );
+            "Unexpected value encountered on runtime: \"" + value + "\"");
     }
 
     return value;
@@ -127,7 +165,10 @@ void Interpreter::interpret_statement(ASTNode statementNode)
         ExprVal output_expr = this->interpret_expression(statementNode.get_child_nodes()[0]);
 
         // Display
-        std::cout << this->runtime_casting(output_expr.type, output_expr.value) << std::endl;
+        std::string output_val = this->runtime_casting(output_expr.type, output_expr.value);
+        output_val = this->remove_trailing_zeroes(output_expr);
+
+        std::cout << output_val << std::endl;
     }
     break;
     case ASTNodeType::DECLARATION:
