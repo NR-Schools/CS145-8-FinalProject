@@ -8,6 +8,13 @@
 
 enum ASTNodeType {
     PROGRAM,
+    FUNCTION,
+
+    FUNC_CALL,
+    FUNC_DECL,
+    FUNC_ARG_LIST,
+    FUNC_IMPL,
+    RETURN,
 
     DECLARATION,
     ASSIGNMENT,

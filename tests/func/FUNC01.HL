@@ -1,0 +1,17 @@
+fn => sample(a: integer, b: double): integer
+{
+    output << a ;
+    output << b ;
+    return := a + b ;
+}
+
+
+y : integer;
+
+sample(2, 3);
+
+y := sample(2, 3);
+
+y := sample(2, 3) * 2 + 1;
+
+output << y;

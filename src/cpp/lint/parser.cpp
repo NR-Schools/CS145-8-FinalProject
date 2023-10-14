@@ -30,8 +30,19 @@ ASTNode Parser::parseProgram()
     rootNode.set_node_type(ASTNodeType::PROGRAM);
     while (this->current_token_index + 1 < this->tokens.size())
     {
-        ASTNode stmt = this->parseStatement();
-        rootNode.add_child_node(stmt);
+        ASTNode subnode;
+
+        // Check If Function
+        subnode = this->parseFunction();
+
+        if (subnode.get_node_type() == ASTNodeType::NONE)
+        {
+            // Check If Statement
+            subnode = this->parseStatement();
+        }
+
+        // Push back node
+        rootNode.add_child_node(subnode);
 
         // Check err
         if (this->err_flag)
@@ -44,6 +55,121 @@ ASTNode Parser::parseProgram()
     }
 
     return rootNode;
+}
+
+ASTNode Parser::parseFunction()
+{
+    ASTNode func_node;
+    func_node.set_node_type(ASTNodeType::FUNC_DECL);
+
+    // Check if Function Declaration + Implementation
+    if (this->match_token(TokenType::TOKEN_RESERVED, {"fn"}, true))
+    {
+        this->advance_to_next_token();
+        if (!this->match_token(TokenType::TOKEN_SEPARATOR, {"=>"}, true))
+            this->unexpected_token_error("->");
+
+        this->advance_to_next_token();
+        if (!this->match_token(TokenType::TOKEN_SEPARATOR, {"("}, true))
+            this->unexpected_token_error("(");
+
+        // Parse Parameters
+        this->advance_to_next_token();
+        ASTNode arg_list_node = this->parseFuncArgList();
+        func_node.add_child_node(arg_list_node);
+
+        this->advance_to_next_token();
+        if (!this->match_token(TokenType::TOKEN_SEPARATOR, {")"}, true))
+            this->unexpected_token_error(")");
+
+        this->advance_to_next_token();
+        if (!this->match_token(TokenType::TOKEN_SEPARATOR, {":"}, true))
+            this->unexpected_token_error(":");
+
+        // Parse Function Return Type
+        if (!this->match_token(TokenType::TOKEN_RESERVED, {"integer", "double"}, true))
+            this->unexpected_token_error("integer or double");
+        ASTNode func_type;
+        func_type.set_node_type(ASTNodeType::ATOM);
+        func_type.set_value(this->get_curr_token().lexeme);
+        func_node.add_child_node(func_type);
+
+        this->advance_to_next_token();
+        if (!this->match_token(TokenType::TOKEN_SEPARATOR, {"{"}, true))
+            this->unexpected_token_error("{");
+
+        // Parse Statements
+        this->advance_to_next_token();
+        ASTNode statements_node;
+        statements_node.set_node_type(ASTNodeType::FUNC_IMPL);
+        while (this->peek_and_compare_future_token(TokenType::TOKEN_SEPARATOR, {"}"}, true))
+        {
+            ASTNode statement_node = this->parseStatement();
+            func_node.add_child_node(statement_node);
+        }
+        func_node.add_child_node(statements_node);
+
+        this->advance_to_next_token();
+        if (!this->match_token(TokenType::TOKEN_SEPARATOR, {"}"}, true))
+            this->unexpected_token_error("}");
+    }
+
+    return func_node;
+}
+
+ASTNode Parser::parseFuncArgList()
+{
+    // This is just list of identifiers separated by comma
+    ASTNode arg_list_node;
+    arg_list_node.set_node_type(ASTNodeType::FUNC_ARG_LIST);
+
+    if (this->match_token(TokenType::TOKEN_SEPARATOR, {")"}, true))
+        return arg_list_node;
+
+    while (true)
+    {
+        // Get all identifiers
+        ASTNode parameter;
+        parameter.set_node_type(ASTNodeType::DECLARATION);
+
+        if (!this->match_token(TokenType::TOKEN_IDENTIFIER, {}, false))
+            this->unexpected_token_error("<identifer>");
+        ASTNode ident_node;
+        ident_node.set_node_type(ASTNodeType::ATOM);
+        ident_node.set_value(this->get_curr_token().lexeme);
+        parameter.add_child_node(ident_node);
+        this->advance_to_next_token();
+
+        if (!this->match_token(TokenType::TOKEN_SEPARATOR, {":"}, true))
+            this->unexpected_token_error(":");
+        this->advance_to_next_token();
+
+        if (!this->match_token(TokenType::TOKEN_RESERVED, {"integer", "double"}, true))
+            this->unexpected_token_error("integer or double");
+        ASTNode ident_type_node;
+        ident_type_node.set_node_type(ASTNodeType::ATOM);
+        ident_type_node.set_value(this->get_curr_token().lexeme);
+        parameter.add_child_node(ident_type_node);
+
+        arg_list_node.add_child_node(parameter);
+
+        if (this->peek_and_compare_future_token(TOKEN_SEPARATOR, {","}, true))
+        {
+            this->advance_to_next_token();
+            this->advance_to_next_token();
+            continue;
+        }
+
+        if (this->peek_and_compare_future_token(TOKEN_SEPARATOR, {")"}, true))
+        {
+            break;
+        }
+
+        this->advance_to_next_token();
+        this->unexpected_token_error(", or )");
+    }
+
+    return arg_list_node;
 }
 
 ASTNode Parser::parseStatement()
@@ -172,6 +298,37 @@ ASTNode Parser::parseStatement()
 
             return statementNode;
         }
+
+        // For functions: Check for Function Call
+        if (this->match_token(TokenType::TOKEN_SEPARATOR, {"("}, true))
+        {
+            this->advance_to_next_token();
+
+            if (this->peek_and_compare_future_token(TokenType::TOKEN_SEPARATOR, {")"}, true))
+            {
+                //
+            }
+
+            // Get Argument List
+        }
+    }
+
+    // For functions: Check if return
+    if (this->match_token(TokenType::TOKEN_RESERVED, {"return"}, true))
+    {
+        statementNode.set_node_type(ASTNodeType::RETURN);
+
+        this->advance_to_next_token();
+        if (!this->match_token(TokenType::TOKEN_OPERATOR, {":="}, true))
+            this->unexpected_token_error(":=");
+        
+        this->advance_to_next_token();
+        ASTNode expression_node = this->parseExpression();
+        statementNode.add_child_node(expression_node);
+
+        this->advance_to_next_token();
+        if (!this->match_token(TokenType::TOKEN_SEPARATOR, {";"}, true))
+            this->unexpected_token_error(";");
     }
 
     // Error

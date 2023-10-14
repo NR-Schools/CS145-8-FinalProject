@@ -23,6 +23,10 @@ private:
 
     // Parse from Top to Bottom
     ASTNode parseProgram();
+    
+    ASTNode parseFunction();
+    ASTNode parseFuncArgList();
+    
     ASTNode parseStatement();
     ASTNode parseExpression();
     ASTNode parseTerm();

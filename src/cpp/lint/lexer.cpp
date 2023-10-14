@@ -5,8 +5,10 @@ bool __match_or(std::string chars_to_match, char src_ch, bool is_null_check)
     if (is_null_check && src_ch == '\0')
         return true;
 
-    for (char ch_match : chars_to_match) {
-        if (ch_match == src_ch) return true;
+    for (char ch_match : chars_to_match)
+    {
+        if (ch_match == src_ch)
+            return true;
     }
 
     return false;
@@ -14,10 +16,12 @@ bool __match_or(std::string chars_to_match, char src_ch, bool is_null_check)
 
 bool __is_reserved(std::string identifier)
 {
-    std::string reserved_arr[4] = {"integer", "double", "if", "output"};
+    std::string reserved_arr[] = {"integer", "double", "if", "output", "fn", "return"};
 
-    for (std::string reserved_str : reserved_arr) {
-        if (identifier.compare(reserved_str) == 0) return true;
+    for (std::string reserved_str : reserved_arr)
+    {
+        if (identifier.compare(reserved_str) == 0)
+            return true;
     }
 
     return false;
@@ -64,10 +68,10 @@ Token getNextToken(std::string input, int &index, int &src_line)
         case State::START:
         {
             // Check all purely single character tokens only
-            if (curr_char == '(' || curr_char == ')' || curr_char == ';' ||
+            if (curr_char == '(' || curr_char == ')' || curr_char == ';' || curr_char == ',' ||
                 curr_char == '+' || curr_char == '-' || curr_char == '*' || curr_char == '/')
             {
-                if (curr_char == '(' || curr_char == ')' || curr_char == ';')
+                if (curr_char == '(' || curr_char == ')' || curr_char == ';' || curr_char == ',')
                     token.type = TOKEN_SEPARATOR;
                 else if (curr_char == '+' || curr_char == '-' || curr_char == '*' || curr_char == '/')
                     token.type = TOKEN_OPERATOR;
@@ -124,15 +128,38 @@ Token getNextToken(std::string input, int &index, int &src_line)
             }
 
             // Required two characters
-            else if ((curr_char == '!' || curr_char == '=') && next_char == '=')
+            else if (curr_char == '!')
             {
-                token.type = TOKEN_OPERATOR;
                 token.lexeme += curr_char;
-                token.lexeme += next_char;
 
-                // Go to next character (due to lookahead)
-                index++;
+                if (next_char == '=')
+                {
+                    token.type = TOKEN_OPERATOR;
+                    // Go to next character (due to lookahead)
+                    index++;
+                }
                 
+                token.type = TOKEN_INVALID;
+                current_state = State::FINISH;
+            }
+            else if (curr_char == '=')
+            {
+                token.lexeme += curr_char;
+
+                if (next_char == '=')
+                {
+                    token.type = TOKEN_OPERATOR;
+                    // Go to next character (due to lookahead)
+                    index++;
+                }
+                else if (next_char == '>')
+                {
+                    token.type = TOKEN_SEPARATOR;
+                    // Go to next character (due to lookahead)
+                    index++;
+                }
+                
+                token.type = TOKEN_INVALID;
                 current_state = State::FINISH;
             }
 
@@ -246,6 +273,6 @@ Token getNextToken(std::string input, int &index, int &src_line)
         // Go to next character
         index++;
     }
-    
+
     return token;
 }
