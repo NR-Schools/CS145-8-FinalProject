@@ -25,7 +25,7 @@ private:
     ASTNode parseProgram();
     
     ASTNode parseFunction();
-    ASTNode parseFuncArgList();
+    ASTNode parseFuncParamList();
     
     ASTNode parseStatement();
     ASTNode parseExpression();

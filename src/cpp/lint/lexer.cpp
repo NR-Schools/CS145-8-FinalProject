@@ -1,7 +1,10 @@
 #include "lexer.hpp"
 
-bool __match_or(std::string chars_to_match, char src_ch, bool is_null_check)
+bool __match_or(std::string chars_to_match, char src_ch, bool is_null_check, bool check_new_line)
 {
+    if (check_new_line && src_ch == '\n')
+        return true;
+
     if (is_null_check && src_ch == '\0')
         return true;
 
@@ -33,8 +36,8 @@ Token getNextToken(std::string input, int &index, int &src_line)
     State current_state = State::START;
 
     // Number and String end pattern
-    const char *NUMBER_ENDS = " ();+-*/<>=!";
-    const char *IDENT_ENDS = " ();:+-*/<>=!";
+    const char *NUMBER_ENDS = " (){},;+-*/<>=!";
+    const char *IDENT_ENDS = " (){},;:+-*/<>=!";
 
     // For numbers
     bool has_used_dot = false;
@@ -68,10 +71,11 @@ Token getNextToken(std::string input, int &index, int &src_line)
         case State::START:
         {
             // Check all purely single character tokens only
-            if (curr_char == '(' || curr_char == ')' || curr_char == ';' || curr_char == ',' ||
+            if (curr_char == '{' || curr_char == '}' ||
+                curr_char == '(' || curr_char == ')' || curr_char == ';' || curr_char == ',' ||
                 curr_char == '+' || curr_char == '-' || curr_char == '*' || curr_char == '/')
             {
-                if (curr_char == '(' || curr_char == ')' || curr_char == ';' || curr_char == ',')
+                if (curr_char == '{' || curr_char == '}' || curr_char == '(' || curr_char == ')' || curr_char == ';' || curr_char == ',')
                     token.type = TOKEN_SEPARATOR;
                 else if (curr_char == '+' || curr_char == '-' || curr_char == '*' || curr_char == '/')
                     token.type = TOKEN_OPERATOR;
@@ -131,35 +135,38 @@ Token getNextToken(std::string input, int &index, int &src_line)
             else if (curr_char == '!')
             {
                 token.lexeme += curr_char;
+                token.type = TOKEN_INVALID;
 
                 if (next_char == '=')
                 {
+                    token.lexeme += next_char;
                     token.type = TOKEN_OPERATOR;
                     // Go to next character (due to lookahead)
                     index++;
                 }
                 
-                token.type = TOKEN_INVALID;
                 current_state = State::FINISH;
             }
             else if (curr_char == '=')
             {
                 token.lexeme += curr_char;
+                token.type = TOKEN_INVALID;
 
                 if (next_char == '=')
                 {
+                    token.lexeme += next_char;
                     token.type = TOKEN_OPERATOR;
                     // Go to next character (due to lookahead)
                     index++;
                 }
                 else if (next_char == '>')
                 {
+                    token.lexeme += next_char;
                     token.type = TOKEN_SEPARATOR;
                     // Go to next character (due to lookahead)
                     index++;
                 }
                 
-                token.type = TOKEN_INVALID;
                 current_state = State::FINISH;
             }
 

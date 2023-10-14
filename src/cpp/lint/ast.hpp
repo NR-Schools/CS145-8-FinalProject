@@ -12,7 +12,7 @@ enum ASTNodeType {
 
     FUNC_CALL,
     FUNC_DECL,
-    FUNC_ARG_LIST,
+    FUNC_PARAM_LIST,
     FUNC_IMPL,
     RETURN,
 
