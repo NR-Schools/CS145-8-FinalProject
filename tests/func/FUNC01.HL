@@ -1,17 +1,26 @@
-fn => sample(a: integer, b: double): integer
+a : integer ;
+b : double ;
+c : double ;
+d : integer ;
+
+a := 9/4 + 2*3 ;
+b := 4*5/6.0 ;
+c := 7 + 8*9/10 ;
+d := 4 ;
+
+if (d > 1) output << a ;
+if (d > 2) output << b ;
+if (d > 3) output << c ;
+
+
+fn => sum(a: integer, b: double): integer
 {
-    output << a ;
-    output << b ;
-    return := a + b ;
+    c := a + b ;
+    return := c ;
 }
 
 
-y : integer;
+e : integer ;
+f : double ;
 
-sample(2, 3);
-
-y := sample(2, 3);
-
-y := sample(2, 3) * 2 + 1;
-
-output << y;
+sum(1, 2);

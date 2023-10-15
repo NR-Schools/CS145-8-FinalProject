@@ -1,9 +1,35 @@
 #include "call_stack.hpp"
 
-CallStack::CallStack(ASTNode node, int depth) : Interpreter(node)
+CallStack::CallStack(std::unordered_map<std::string, FunctionInfo> func_map, FunctionInfo func_info, std::vector<ExprVal> arg_list, int depth)
 {
-    this->function_node = node;
-    this->depth = depth;
+    this->func_map = func_map;
+    this->func_info = func_info;
+    this->curr_depth = depth - 1;
+    this->is_value_received = false;
+
+    // Check depth
+    if (curr_depth < 0)
+        this->runtime_error("Allowed Call Stack Exceeded!");
+
+    // Check if arguments matches parameters (size)
+    if (this->func_info.func_params.insertion_order.size() != arg_list.size())
+        this->runtime_error("Unequal length of parameter and arguments");
+
+    this->var_map = func_info.func_params.local_var_map;
+
+    // Assign values to parameter-variables
+    for (int i = 0; i < func_info.func_params.insertion_order.size(); i++)
+    {
+        std::string param = func_info.func_params.insertion_order[i];
+        std::string value = arg_list[i].value;
+
+        // Assign variable
+        this->var_map[param] = VariableInfo::assignment(
+            this->var_map[param],
+            this->runtime_casting(
+                this->var_map[param].data_type,
+                value));
+    }
 }
 
 CallStack::~CallStack()
@@ -12,23 +38,62 @@ CallStack::~CallStack()
 
 ExprVal CallStack::evaluate_function()
 {
-    ExprVal function_eval;
-
-
-    // Setup Type
-    ASTNode func_type_node = this->function_node.get_child_nodes()[0];
-    if (func_type_node.get_value().compare("integer") == 0)
+    // Execute Statements line by line
+    for (ASTNode statement_node : this->func_info.statements_holder.get_child_nodes())
     {
-        function_eval.type = ExprValType::INTEGER;
-    }
-    else if (func_type_node.get_value().compare("double") == 0)
-    {
-        function_eval.type = ExprValType::DOUBLE;
+        this->interpret_statement(statement_node);
+
+        if (this->is_value_received)
+            break;
     }
 
+    std::string adjusted_value = this->runtime_casting(
+        this->func_info.func_return_type,
+        this->return_value.value
+    );
 
-    // Setup Value
+    ExprVal ret_expr_val;
+    ret_expr_val.type = this->func_info.func_return_type;
+    ret_expr_val.value = adjusted_value;
+
+    return ret_expr_val;
+}
+
+void CallStack::declare_function(ASTNode node)
+{
+    this->runtime_error("Function Declaration inside a function is not allowed!");
+}
+
+ExprVal CallStack::interpret_function(ASTNode node)
+{
+    // Get Function Name
+    std::string func_name = node.get_value();
+
+    // Get Function Parameters
+    std::vector<ExprVal> arg_list;
+    for (ASTNode subnode : node.get_child_nodes())
+    {
+        // Check Expression
+        ExprVal expr_val = this->interpret_expression(subnode);
+        arg_list.push_back(expr_val);
+    }
+
+    // Process Function via CallStack
+    auto iter = this->func_map.find(func_name);
+    if (iter != this->func_map.end())
+    {
+        FunctionInfo func_info = iter->second;
+        CallStack call_stack(this->func_map, func_info, arg_list, 20);
+        return call_stack.evaluate_function();
+    }
+    else
+        this->runtime_error("Error: function \"" + func_name + "\" not found");
     
+    return ExprVal();
+}
 
-    return function_eval;
+void CallStack::return_function(ASTNode node)
+{
+    this->is_value_received = true;
+    this->return_value = this->interpret_expression(node.get_child_nodes()[0]);
 }
