@@ -39,7 +39,11 @@ T InterpreterTools::perform_calculation(std::string left, std::string right, std
     else if (op.compare("*") == 0)
         final_val = left_val * right_val;
     else if (op.compare("/") == 0)
+    {
+        if (right_val == 0)
+            this->runtime_error("Dividing by zero error");
         final_val = left_val / right_val;
+    }
 
     else if (op.compare("==") == 0)
         final_val = left_val == right_val;
@@ -64,7 +68,7 @@ T InterpreterTools::calculated_expression_formatter(T val)
 {
     // Check if double
     // via casting to string
-    ExprValType val_type = this->assert_type_from_value(std::to_string(val));
+    ExprValType val_type = this->__assert_type_from_value(std::to_string(val));
 
     if (val_type == ExprValType::DOUBLE)
     {
@@ -91,28 +95,34 @@ std::string InterpreterTools::remove_trailing_zeroes(ExprVal expr_value)
     return expr_value.value;
 }
 
-std::string InterpreterTools::get_value_if_variable(std::string unknown_atom)
+ExprVal InterpreterTools::get_value_if_variable(std::string unknown_atom)
 {
-    std::string value = unknown_atom;
+    ExprVal expr_val;
 
     // If variable -> return var value, else, just return value
-    if (this->var_map.find(value) != this->var_map.end())
+    if (this->var_map.find(unknown_atom) != this->var_map.end())
     {
-        value = this->var_map[unknown_atom].value;
+        expr_val.type = this->var_map[unknown_atom].data_type;
+        expr_val.value = this->var_map[unknown_atom].value;
+        return expr_val;
     }
 
     // Check if valid value
-    if (!this->is_valid_value(value))
+    if (!this->is_valid_value(unknown_atom))
     {
         // Runtime Error
         this->runtime_error(
-            "Unexpected value encountered on runtime: \"" + value + "\"");
+            "Unexpected value encountered on runtime: \"" + unknown_atom + "\"");
     }
 
-    return value;
+    // Perform Runtime Casting if number
+    expr_val.type = __assert_type_from_value(unknown_atom);
+    expr_val.value = runtime_casting(expr_val.type, unknown_atom);
+
+    return expr_val;
 }
 
-ExprValType InterpreterTools::assert_type_from_value(std::string unknown_value)
+ExprValType InterpreterTools::__assert_type_from_value(std::string unknown_value)
 {
     // If a dot exists
     std::size_t found = unknown_value.find('.');
@@ -162,10 +172,7 @@ void InterpreterTools::interpret_statement(ASTNode statementNode)
         std::string datatype = statementNode.get_child_nodes()[1].get_value();
 
         // Check for redeclared variable
-        if (this->var_map.find(identifier) != this->var_map.end())
-        {
-            this->runtime_error("Redeclaration of identifier: \"" + identifier + "\"");
-        }
+        check_if_declared(identifier);
 
         // Create variable
         if (datatype.compare("integer") == 0)
@@ -196,8 +203,9 @@ void InterpreterTools::interpret_statement(ASTNode statementNode)
         this->var_map[identifier] = VariableInfo::assignment(
             this->var_map[identifier],
             this->runtime_casting(
-                this->var_map[identifier].data_type, value_node.value));
-    }
+                this->var_map[identifier].data_type, value_node.value)
+            );
+        }
     break;
     case ASTNodeType::FUNC_DECL:
     {
@@ -234,13 +242,7 @@ ExprVal InterpreterTools::interpret_expression(ASTNode expressionNode)
     // Check if atom
     if (expressionNode.get_node_type() == ASTNodeType::ATOM)
     {
-        std::string val = this->get_value_if_variable(expressionNode.get_value());
-        ExprValType asserted_type = this->assert_type_from_value(val);
-
-        ExprVal expr_val;
-        expr_val.value = val;
-        expr_val.type = asserted_type;
-        return expr_val;
+        return this->get_value_if_variable(expressionNode.get_value());
     }
 
     // Check if binary operation
@@ -282,4 +284,18 @@ void InterpreterTools::runtime_error(std::string content)
     std::cout << "Runtime Error: " << content << std::endl;
     std::cout << "Exiting Immediately..." << std::endl;
     exit(1);
+}
+
+void InterpreterTools::check_if_declared(std::string symbol_name)
+{
+    // Loop in variables
+    auto var_iter = this->var_map.find(symbol_name);
+    if (var_iter != this->var_map.end())
+        this->runtime_error("Symbol: \"" + symbol_name + "\" already declared as variable!");
+
+
+    // Loop in functions
+    auto func_iter = this->func_map.find(symbol_name);
+    if (func_iter != this->func_map.end())
+        this->runtime_error("Symbol: \"" + symbol_name + "\" already declared as function!");
 }

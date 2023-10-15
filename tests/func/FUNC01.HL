@@ -1,27 +1,11 @@
-a : integer ;
-b : double ;
-c : double ;
-d : integer ;
+a : double;
 
-a := 9/4 + 2*3 ;
-b := 4*5/6.0 ;
-c := 7 + 8*9/10 ;
-d := 4 ;
-
-if (d > 1) output << a ;
-if (d > 2) output << b ;
-if (d > 3) output << c ;
-
-fn => product(a:integer, b:double): integer
+fn => a(): integer
 {
     return := 2;
 }
 
-fn => sum(a:integer, b:double): integer
-{
-    return := a+b;
-}
 
-e : double;
-e := sum(1, sum(2, 3)) + sum(product(2, 3), 1);
-output << e/2;
+a := b();
+
+output << a/4;

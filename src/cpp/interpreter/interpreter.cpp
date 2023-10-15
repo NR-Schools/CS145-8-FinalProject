@@ -27,6 +27,9 @@ void Interpreter::declare_function(ASTNode node)
     // Get Function Name
     func_name = node.get_value();
 
+    // Check if already declared
+    check_if_declared(func_name);
+
     // Get Other Function Info
     for (ASTNode subnode : node.get_child_nodes())
     {
