@@ -95,7 +95,8 @@ ExprVal Interpreter::interpret_function(ASTNode node)
     {
         FunctionInfo func_info = iter->second;
         CallStack call_stack(this->func_map, func_info, arg_list, 20);
-        return call_stack.evaluate_function();
+        ExprVal expr_val = call_stack.evaluate_function();
+        return expr_val;
     }
     else
         this->runtime_error("Error: function \"" + func_name + "\" not found");

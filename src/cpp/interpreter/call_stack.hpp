@@ -14,7 +14,7 @@ public:
     void declare_function(ASTNode node);
     ExprVal interpret_function(ASTNode node);
     void return_function(ASTNode node);
-private:
+public:
     ExprVal return_value;
     FunctionInfo func_info;
     int curr_depth;

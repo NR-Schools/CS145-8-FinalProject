@@ -16,6 +16,7 @@ CallStack::CallStack(std::unordered_map<std::string, FunctionInfo> func_map, Fun
         this->runtime_error("Unequal length of parameter and arguments");
 
     this->var_map = func_info.func_params.local_var_map;
+    this->func_map = func_map;
 
     // Assign values to parameter-variables
     for (int i = 0; i < func_info.func_params.insertion_order.size(); i++)
@@ -46,6 +47,10 @@ ExprVal CallStack::evaluate_function()
         if (this->is_value_received)
             break;
     }
+
+    // Check for value
+    if (!this->is_value_received)
+        this->runtime_error("Function exited without returning a value");
 
     std::string adjusted_value = this->runtime_casting(
         this->func_info.func_return_type,
@@ -83,7 +88,7 @@ ExprVal CallStack::interpret_function(ASTNode node)
     if (iter != this->func_map.end())
     {
         FunctionInfo func_info = iter->second;
-        CallStack call_stack(this->func_map, func_info, arg_list, 20);
+        CallStack call_stack(this->func_map, func_info, arg_list, this->curr_depth);
         return call_stack.evaluate_function();
     }
     else

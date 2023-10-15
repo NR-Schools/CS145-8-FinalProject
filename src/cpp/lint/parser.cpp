@@ -79,7 +79,6 @@ ASTNode Parser::parseFunction()
             this->unexpected_token_error("(");
 
         // Parse Parameters
-        this->advance_to_next_token();
         ASTNode param_list_node = this->parseFuncParamList();
         func_node.add_child_node(param_list_node);
 
@@ -111,7 +110,7 @@ ASTNode Parser::parseFunction()
         {
             this->advance_to_next_token();
             ASTNode statement_node = this->parseStatement();
-            func_node.add_child_node(statement_node);
+            statements_node.add_child_node(statement_node);
         }
         func_node.add_child_node(statements_node);
 
@@ -129,8 +128,10 @@ ASTNode Parser::parseFuncParamList()
     ASTNode param_list_node;
     param_list_node.set_node_type(ASTNodeType::FUNC_PARAM_LIST);
 
-    if (this->match_token(TokenType::TOKEN_SEPARATOR, {")"}, true))
+    if (this->peek_and_compare_future_token(TokenType::TOKEN_SEPARATOR, {")"}, true))
         return param_list_node;
+
+    this->advance_to_next_token();
 
     while (true)
     {
@@ -308,11 +309,14 @@ ASTNode Parser::parseStatement()
         // For functions: Check for Function Call
         if (this->match_token(TokenType::TOKEN_SEPARATOR, {"("}, true))
         {
-            statementNode.set_node_type(ASTNodeType::FUNC_CALL);
+            ASTNode func_call_node;
+            func_call_node.set_node_type(ASTNodeType::FUNC_CALL);
+            func_call_node.set_value(identifier_node.get_value());
+            statementNode = func_call_node;
 
-            this->advance_to_next_token();
-            if (!this->match_token(TokenType::TOKEN_SEPARATOR, {")"}, true))
+            if (!this->peek_and_compare_future_token(TokenType::TOKEN_SEPARATOR, {")"}, true))
             {
+                this->advance_to_next_token();
                 while (true)
                 {
                     // Get List of Expression
@@ -341,6 +345,8 @@ ASTNode Parser::parseStatement()
             this->advance_to_next_token();
             if (!this->match_token(TokenType::TOKEN_SEPARATOR, {";"}, true))
                 this->unexpected_token_error(";");
+            
+            return statementNode;
         }
     }
 

@@ -12,15 +12,16 @@ if (d > 1) output << a ;
 if (d > 2) output << b ;
 if (d > 3) output << c ;
 
-
-fn => sum(a: integer, b: double): integer
+fn => product(a:integer, b:double): integer
 {
-    c := a + b ;
-    return := c ;
+    return := 2;
 }
 
+fn => sum(a:integer, b:double): integer
+{
+    return := a+b;
+}
 
-e : integer ;
-f : double ;
-
-sum(1, 2);
+e : double;
+e := sum(1, sum(2, 3)) + sum(product(2, 3), 1);
+output << e/2;
