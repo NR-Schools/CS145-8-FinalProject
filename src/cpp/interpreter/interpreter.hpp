@@ -14,7 +14,7 @@
 class Interpreter : InterpreterTools
 {
 public:
-    Interpreter(ASTNode root);
+    Interpreter(ASTNode root, int max_allowed_depth=60);
     ~Interpreter();
     
     void interpret();
@@ -25,4 +25,5 @@ public:
 
 private:
     ASTNode root;
+    int max_allowed_depth;
 };

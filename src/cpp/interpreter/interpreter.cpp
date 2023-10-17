@@ -1,8 +1,9 @@
 #include "interpreter.hpp"
 
-Interpreter::Interpreter(ASTNode root)
+Interpreter::Interpreter(ASTNode root, int max_allowed_depth)
 {
     this->root = root;
+    this->max_allowed_depth = max_allowed_depth;
 }
 
 Interpreter::~Interpreter()
@@ -97,7 +98,7 @@ ExprVal Interpreter::interpret_function(ASTNode node)
     if (iter != this->func_map.end())
     {
         FunctionInfo func_info = iter->second;
-        CallStack call_stack(this->func_map, func_info, arg_list, 20);
+        CallStack call_stack(func_name, this->func_map, func_info, arg_list, this->max_allowed_depth);
         ExprVal expr_val = call_stack.evaluate_function();
         return expr_val;
     }

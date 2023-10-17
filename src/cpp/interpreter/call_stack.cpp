@@ -1,7 +1,8 @@
 #include "call_stack.hpp"
 
-CallStack::CallStack(std::unordered_map<std::string, FunctionInfo> func_map, FunctionInfo func_info, std::vector<ExprVal> arg_list, int depth)
+CallStack::CallStack(std::string func_name, std::unordered_map<std::string, FunctionInfo> func_map, FunctionInfo func_info, std::vector<ExprVal> arg_list, int depth)
 {
+    this->func_name = func_name;
     this->func_map = func_map;
     this->func_info = func_info;
     this->curr_depth = depth - 1;
@@ -13,7 +14,15 @@ CallStack::CallStack(std::unordered_map<std::string, FunctionInfo> func_map, Fun
 
     // Check if arguments matches parameters (size)
     if (this->func_info.func_params.insertion_order.size() != arg_list.size())
-        this->runtime_error("Unequal length of parameter and arguments");
+        this->runtime_error(
+            "Function \"" +
+            this->func_name +
+            "\" expects [" +
+            std::to_string(this->func_info.func_params.insertion_order.size()) +
+            "] argument(s) but received [" +
+            std::to_string(arg_list.size()) +
+            "]"
+        );
 
     this->var_map = func_info.func_params.local_var_map;
     this->func_map = func_map;
@@ -88,7 +97,7 @@ ExprVal CallStack::interpret_function(ASTNode node)
     if (iter != this->func_map.end())
     {
         FunctionInfo func_info = iter->second;
-        CallStack call_stack(this->func_map, func_info, arg_list, this->curr_depth);
+        CallStack call_stack(func_name, this->func_map, func_info, arg_list, this->curr_depth);
         return call_stack.evaluate_function();
     }
     else

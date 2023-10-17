@@ -90,7 +90,11 @@ std::string InterpreterTools::remove_trailing_zeroes(ExprVal expr_value)
             if (expr_val_str[i] != '0')
                 end = i;
         }
-        return expr_val_str.substr(0, end + 1);
+        expr_val_str = expr_val_str.substr(0, end + 1);
+
+        if (expr_val_str[expr_val_str.length()-1] == '.')
+            expr_val_str.pop_back();
+        return expr_val_str;
     }
     return expr_value.value;
 }
@@ -112,7 +116,7 @@ ExprVal InterpreterTools::get_value_if_variable(std::string unknown_atom)
     {
         // Runtime Error
         this->runtime_error(
-            "Unexpected value encountered on runtime: \"" + unknown_atom + "\"");
+            "Unexpected use of undeclared variable: \"" + unknown_atom + "\"");
     }
 
     // Perform Runtime Casting if number

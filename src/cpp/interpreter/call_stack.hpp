@@ -6,7 +6,7 @@
 class CallStack : InterpreterTools
 {
 public:
-    CallStack(std::unordered_map<std::string, FunctionInfo> func_map, FunctionInfo func_info, std::vector<ExprVal> arg_list, int depth);
+    CallStack(std::string func_name, std::unordered_map<std::string, FunctionInfo> func_map, FunctionInfo func_info, std::vector<ExprVal> arg_list, int depth);
     ~CallStack();
 
     ExprVal evaluate_function();
@@ -15,6 +15,7 @@ public:
     ExprVal interpret_function(ASTNode node);
     void return_function(ASTNode node);
 public:
+    std::string func_name;
     ExprVal return_value;
     FunctionInfo func_info;
     int curr_depth;

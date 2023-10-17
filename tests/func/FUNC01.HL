@@ -1,11 +1,9 @@
 a : double;
+a := 10*9;
 
-fn => a(): integer
+fn => rfunc(a: integer): integer
 {
-    return := 2;
+    return := rfunc(a-1) * rfunc(a-2) * 2;
 }
 
-
-a := b();
-
-output << a/4;
+output << rfunc(6);

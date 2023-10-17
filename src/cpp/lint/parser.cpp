@@ -469,7 +469,7 @@ ASTNode Parser::parseTerm()
 
             // Get next term
             this->advance_to_next_token();
-            ASTNode term_node = this->parseTerm();
+            ASTNode term_node = this->parseFactor();
 
             // Push initial_term_node and term_node under _node and replace initial_term_node with _node
             _node.add_child_node(initial_factor_node);

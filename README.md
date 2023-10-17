@@ -20,3 +20,6 @@ Run it by:
 HLint (path of file)
 ```
 <br><br>
+
+
+**Decimal Places can be more than 2.

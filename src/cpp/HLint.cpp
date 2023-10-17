@@ -75,6 +75,7 @@ int main(int argc, char *argv[])
 
     // Output to NOSPACES.TXT
     rfile_content.erase(remove(rfile_content.begin(), rfile_content.end(), ' '), rfile_content.end());
+    rfile_content.erase(remove(rfile_content.begin(), rfile_content.end(), '\n'), rfile_content.end());
     write_file("NOSPACES.TXT", rfile_content);
 
     // Start Scanning (Lexer)
