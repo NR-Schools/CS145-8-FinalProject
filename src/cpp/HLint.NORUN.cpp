@@ -8,16 +8,15 @@
 #include "lint/parser.hpp"
 #include "interpreter/interpreter.hpp"
 
-
-// With Optional Running
+// Only Syntax
 
 // Compilation of this build
-// g++ HLint.cpp lint\\*.cpp interpreter\\*.cpp -o HLint
+// g++ HLint.NORUN.cpp lint\\*.cpp interpreter\\*.cpp -o HLint.NORUN
 
 void help()
 {
     printf("Please pass the source file path as the only argument\n");
-    printf("HLint (source file path) [-r]\n");
+    printf("HLint (source file path)\n");
 }
 
 std::string read_file(const char *filename)
@@ -69,7 +68,7 @@ std::vector<Token> lexer(std::string lines)
 int main(int argc, char *argv[])
 {
     // Show help if no arguments/too many args passed
-    if (argc <= 1 || argc > 3)
+    if (argc <= 1 || argc > 2)
     {
         help();
         return 0;
@@ -116,13 +115,6 @@ int main(int argc, char *argv[])
     
     std::cout << "No Syntax Error!" << std::endl;
 
-    // Optional Running
-    if (argc == 3 || (std::string("-r").compare(argv[2]) == 0))
-    {
-        std::cout << "Interpreting..." << std::endl;
-        Interpreter interpreter(root);
-        interpreter.interpret();
-    }
 
     return 0;
 }
