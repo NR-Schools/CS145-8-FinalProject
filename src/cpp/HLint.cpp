@@ -17,7 +17,7 @@
 */
 
 // Compilation of this build
-// g++ HLint.cpp lint\\*.cpp interpreter\\*.cpp -o HLint
+// g++ HLint.cpp lint\\*.cpp -o HLint
 
 void help()
 {
@@ -119,6 +119,7 @@ int main(int argc, char *argv[])
     
     if (parser.err_flag) {
         std::cout << "ERROR" << std::endl;
+        exit(1);
     }
     
     std::cout << "NO ERROR(S) FOUND" << std::endl;
