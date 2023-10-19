@@ -6,10 +6,15 @@
 
 #include "lint/lexer.hpp"
 #include "lint/parser.hpp"
-#include "interpreter/interpreter.hpp"
+//#include "interpreter/interpreter.hpp"
 
 
-// With Optional Running
+// Strictly Based on Document
+
+// Libraries Included:
+/**
+ * All in lint/* except sym_table.hpp
+*/
 
 // Compilation of this build
 // g++ HLint.cpp lint\\*.cpp interpreter\\*.cpp -o HLint
@@ -17,7 +22,7 @@
 void help()
 {
     printf("Please pass the source file path as the only argument\n");
-    printf("HLint (source file path) [-r]\n");
+    printf("HLint (source file path)\n");
 }
 
 std::string read_file(const char *filename)
@@ -69,7 +74,7 @@ std::vector<Token> lexer(std::string lines)
 int main(int argc, char *argv[])
 {
     // Show help if no arguments/too many args passed
-    if (argc <= 1 || argc > 3)
+    if (argc <= 1 || argc > 2)
     {
         help();
         return 0;
@@ -84,7 +89,7 @@ int main(int argc, char *argv[])
     write_file("NOSPACES.TXT", rfile_content);
 
     // Start Scanning (Lexer)
-    std::cout << "Scanning..." << std::endl;
+    //std::cout << "Scanning..." << std::endl;
     std::vector<Token> tokens = lexer(rfile_content);
 
     // Output to RES_SYM.TXT
@@ -108,21 +113,23 @@ int main(int argc, char *argv[])
     write_file("RES_SYM.TXT", res_words + '\n' + symbols);
 
     // Start Parsing (Parser)
-    std::cout << "Parsing..." << std::endl;
-    Parser parser(tokens);
+    //std::cout << "Parsing..." << std::endl;
+    Parser parser(tokens, false, false);
     ASTNode root = parser.parse();
     
-    if (parser.err_flag) exit(1);
+    if (parser.err_flag) {
+        std::cout << "ERROR" << std::endl;
+    }
     
-    std::cout << "No Syntax Error!" << std::endl;
+    std::cout << "NO ERROR(S) FOUND" << std::endl;
 
     // Optional Running
-    if (argc == 3 || (std::string("-r").compare(argv[2]) == 0))
-    {
-        std::cout << "Interpreting..." << std::endl;
-        Interpreter interpreter(root);
-        interpreter.interpret();
-    }
+    //if (argc == 3 || (std::string("-r").compare(argv[2]) == 0))
+    //{
+    //    std::cout << "Interpreting..." << std::endl;
+    //    Interpreter interpreter(root);
+    //    interpreter.interpret();
+    //}
 
     return 0;
 }
